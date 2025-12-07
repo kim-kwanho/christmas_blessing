@@ -8,7 +8,7 @@ echo   크리스마스 블레싱 앱 서버 시작
 echo ========================================
 echo.
 
-cd /d "%~dp0"
+cd /d "%~dp0.."
 echo 현재 디렉토리: %CD%
 echo.
 
@@ -19,7 +19,7 @@ if not exist "index.html" (
     exit /b 1
 )
 
-if not exist "app.js" (
+if not exist "src\js\app.js" (
     echo 오류: app.js 파일을 찾을 수 없습니다.
     echo 현재 위치: %CD%
     pause

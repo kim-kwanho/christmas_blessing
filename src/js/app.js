@@ -26,45 +26,8 @@ let photoEditPopup, photoEditCanvas, photoEditCtx, currentEditIndex = -1;
 let photoEditScale = 1, photoEditX = 0, photoEditY = 0;
 let isDragging = false, dragStartX = 0, dragStartY = 0;
 
-// 인생네컷 프레임 데이터
-const frames = [
-    {
-        id: 1,
-        name: 'Yourself Film',
-        layout: {
-            // 4개 구역의 위치와 크기 (비율 기준) - 2x2 그리드
-            slots: [
-                { x: 0.05, y: 0.05, width: 0.44, height: 0.42 }, // 좌상
-                { x: 0.51, y: 0.05, width: 0.44, height: 0.42 }, // 우상
-                { x: 0.05, y: 0.48, width: 0.44, height: 0.42 }, // 좌하
-                { x: 0.51, y: 0.48, width: 0.44, height: 0.42 }  // 우하
-            ],
-            frameColor: '#808080', // 회색 테두리
-            frameWidth: 15,
-            slotColor: '#B3D9FF', // 연한 파란색 슬롯 배경
-            bottomText: 'yourself film',
-            title: ''
-        }
-    },
-    {
-        id: 2,
-        name: 'Merry Christmas',
-        layout: {
-            // 4개 구역의 위치와 크기 (비율 기준) - 2x2 그리드
-            slots: [
-                { x: 0.05, y: 0.05, width: 0.44, height: 0.42 }, // 좌상
-                { x: 0.51, y: 0.05, width: 0.44, height: 0.42 }, // 우상
-                { x: 0.05, y: 0.48, width: 0.44, height: 0.42 }, // 좌하
-                { x: 0.51, y: 0.48, width: 0.44, height: 0.42 }  // 우하
-            ],
-            frameColor: '#DC143C', // 크리스마스 빨간색
-            frameWidth: 20,
-            slotColor: '#FFFFFF', // 흰색 슬롯 배경
-            bottomText: 'Merry Christmas',
-            title: '🎄'
-        }
-    },
-];
+// 인생네컷 프레임 데이터 (동적으로 로드됨)
+let frames = [];
 
 // DOM 요소 초기화
 function initDOMElements() {
@@ -124,8 +87,66 @@ function initDOMElements() {
     return true;
 }
 
+// 프레임 설정 파일 로드
+async function loadFrameConfigs() {
+    // 기본 프레임 설정 (fallback)
+    const defaultFrames = [
+        {
+            id: 1,
+            name: 'Yourself Film',
+            image: null,
+            layout: {
+                slots: [
+                    { x: 0.05, y: 0.05, width: 0.44, height: 0.42 },
+                    { x: 0.51, y: 0.05, width: 0.44, height: 0.42 },
+                    { x: 0.05, y: 0.48, width: 0.44, height: 0.42 },
+                    { x: 0.51, y: 0.48, width: 0.44, height: 0.42 }
+                ],
+                frameColor: '#808080',
+                frameWidth: 15,
+                slotColor: '#B3D9FF',
+                bottomText: 'yourself film',
+                title: ''
+            }
+        },
+        {
+            id: 2,
+            name: 'Merry Christmas',
+            image: null,
+            layout: {
+                slots: [
+                    { x: 0.05, y: 0.05, width: 0.44, height: 0.42 },
+                    { x: 0.51, y: 0.05, width: 0.44, height: 0.42 },
+                    { x: 0.05, y: 0.48, width: 0.44, height: 0.42 },
+                    { x: 0.51, y: 0.48, width: 0.44, height: 0.42 }
+                ],
+                frameColor: '#DC143C',
+                frameWidth: 20,
+                slotColor: '#FFFFFF',
+                bottomText: 'Merry Christmas',
+                title: '🎄'
+            }
+        }
+    ];
+    
+    try {
+        // frames 폴더의 frame-config.json 파일 로드
+        const response = await fetch('frames/frame-config.json');
+        if (response.ok) {
+            frames = await response.json();
+            console.log(`${frames.length}개의 프레임 설정을 로드했습니다.`);
+        } else {
+            console.warn('frame-config.json을 찾을 수 없습니다. 기본 프레임을 사용합니다.');
+            frames = defaultFrames;
+        }
+    } catch (error) {
+        console.error('프레임 설정 로드 실패:', error);
+        frames = defaultFrames;
+    }
+}
+
 // 초기화
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('인생네컷 앱 초기화 시작...');
     
     if (!initDOMElements()) {
@@ -133,6 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     setupEventListeners();
+    
+    // 프레임 설정 로드 후 프레임 표시
+    await loadFrameConfigs();
     loadFrames();
     
     // IndexedDB 초기화 후 사진 로드

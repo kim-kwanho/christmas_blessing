@@ -14,10 +14,10 @@
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎄</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎄</text></svg>">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="public/manifest.json">
     
     <title>크리스마스 평안네컷</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="src/css/styles.css">
 </head>
 <body>
     <!-- 사이드 메뉴 (저장된 사진 갤러리) -->
@@ -56,7 +56,7 @@
                 <div class="frame-preview-background">
                     <div id="photoSlots" class="photo-slots-container">
                     <div class="photo-slot" data-index="0">
-                        <input type="file" id="photoInput0" accept="image/*" style="display: none;">
+                        <input type="file" id="photoInput0" accept="image/*" capture="environment" style="display: none;">
                         <label for="photoInput0" class="photo-slot-label">
                             <div class="slot-placeholder">
                                 <span class="slot-number">1</span>
@@ -67,7 +67,7 @@
                         <button class="slot-remove" style="display: none;">✕</button>
                     </div>
                     <div class="photo-slot" data-index="1">
-                        <input type="file" id="photoInput1" accept="image/*" style="display: none;">
+                        <input type="file" id="photoInput1" accept="image/*" capture="environment" style="display: none;">
                         <label for="photoInput1" class="photo-slot-label">
                             <div class="slot-placeholder">
                                 <span class="slot-number">2</span>
@@ -78,7 +78,7 @@
                         <button class="slot-remove" style="display: none;">✕</button>
                     </div>
                     <div class="photo-slot" data-index="2">
-                        <input type="file" id="photoInput2" accept="image/*" style="display: none;">
+                        <input type="file" id="photoInput2" accept="image/*" capture="environment" style="display: none;">
                         <label for="photoInput2" class="photo-slot-label">
                             <div class="slot-placeholder">
                                 <span class="slot-number">3</span>
@@ -89,7 +89,7 @@
                         <button class="slot-remove" style="display: none;">✕</button>
                     </div>
                     <div class="photo-slot" data-index="3">
-                        <input type="file" id="photoInput3" accept="image/*" style="display: none;">
+                        <input type="file" id="photoInput3" accept="image/*" capture="environment" style="display: none;">
                         <label for="photoInput3" class="photo-slot-label">
                             <div class="slot-placeholder">
                                 <span class="slot-number">4</span>
@@ -169,6 +169,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="src/js/app.js"></script>
 </body>
 </html>

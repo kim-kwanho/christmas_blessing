@@ -1,0 +1,39 @@
+[
+  {
+    "id": 1,
+    "name": "Yourself Film",
+    "image": null,
+    "layout": {
+      "slots": [
+        { "x": 0.05, "y": 0.05, "width": 0.44, "height": 0.42 },
+        { "x": 0.51, "y": 0.05, "width": 0.44, "height": 0.42 },
+        { "x": 0.05, "y": 0.48, "width": 0.44, "height": 0.42 },
+        { "x": 0.51, "y": 0.48, "width": 0.44, "height": 0.42 }
+      ],
+      "frameColor": "#808080",
+      "frameWidth": 15,
+      "slotColor": "#B3D9FF",
+      "bottomText": "yourself film",
+      "title": ""
+    }
+  },
+  {
+    "id": 2,
+    "name": "Merry Christmas",
+    "image": null,
+    "layout": {
+      "slots": [
+        { "x": 0.05, "y": 0.05, "width": 0.44, "height": 0.42 },
+        { "x": 0.51, "y": 0.05, "width": 0.44, "height": 0.42 },
+        { "x": 0.05, "y": 0.48, "width": 0.44, "height": 0.42 },
+        { "x": 0.51, "y": 0.48, "width": 0.44, "height": 0.42 }
+      ],
+      "frameColor": "#DC143C",
+      "frameWidth": 20,
+      "slotColor": "#FFFFFF",
+      "bottomText": "Merry Christmas",
+      "title": "🎄"
+    }
+  }
+]
+
