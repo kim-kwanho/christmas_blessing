@@ -1,0 +1,35 @@
+/* 전역 리셋 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 전역 스타일 */
+html {
+    background: url('/hope.png') center center / cover no-repeat fixed;
+    background-color: #000000;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background: url('/hope.png') center center / cover no-repeat fixed;
+    background-color: #000000;
+    min-height: 100vh;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    color: #333;
+    position: fixed;
+    width: 100%;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+#root {
+    width: 100%;
+    min-height: 100vh;
+}
+
