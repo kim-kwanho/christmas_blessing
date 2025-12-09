@@ -52,7 +52,7 @@
 
     .camera-preview-wrapper {
         width: 100%;
-        aspect-ratio: 2 / 3; /* 10cm x 15cm 비율 */
+        aspect-ratio: 2 / 3; /* 2:3 비율 (세로 3) */
         max-height: 600px;
         margin-bottom: 25px;
     }
@@ -103,7 +103,7 @@
     }
 
     .camera-preview-wrapper {
-        aspect-ratio: 2 / 3; /* 10cm x 15cm 비율 */
+        aspect-ratio: 2 / 3; /* 2:3 비율 (세로 3) */
         max-height: 700px;
         margin-bottom: 35px;
     }
@@ -167,8 +167,8 @@
 .camera-preview-wrapper {
     position: relative;
     width: 100%;
-    /* 프레임 슬롯 비율: width 0.44, height 0.42 -> 0.44/0.42 = 약 1.048:1 */
-    aspect-ratio: 0.44 / 0.42; /* 슬롯 비율 (민트색 영역 비율) */
+    /* 2:3 비율 (세로 3) */
+    aspect-ratio: 2 / 3;
     background: #000;
     border-radius: 15px;
     overflow: hidden;
@@ -178,10 +178,10 @@
     flex-shrink: 0;
 }
 
-/* 태블릿 이상에서도 동일한 슬롯 비율 유지 */
+/* 태블릿 이상에서도 동일한 2:3 비율 유지 */
 @media (min-width: 768px) {
     .camera-preview-wrapper {
-        aspect-ratio: 0.44 / 0.42;
+        aspect-ratio: 2 / 3;
         max-height: 65vh;
     }
 }
