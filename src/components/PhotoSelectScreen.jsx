@@ -9,7 +9,8 @@ function PhotoSelectScreen({
     onPhotoRemove,
     onPhotoTransformChange,
     onBack,
-    onCompose
+    onCompose,
+    allowPhotoChange = true
 }) {
     const frameCanvasRef = useRef(null)
     const slotCanvasRefs = useRef([null, null, null, null])
@@ -242,8 +243,12 @@ function PhotoSelectScreen({
     return (
         <div className="screen active">
             <div className="photo-select-container">
-                <h2>프레임에 맞춰 사진을 선택하세요</h2>
-                <p className="photo-select-hint">각 슬롯을 클릭하여 사진을 추가하세요</p>
+                <h2>프레임에 맞춰 사진을 확인하세요</h2>
+                <p className="photo-select-hint">
+                    {allowPhotoChange 
+                        ? '각 슬롯을 클릭하여 사진을 추가하세요' 
+                        : '사진 위치를 조정할 수 있습니다'}
+                </p>
                 <div className="frame-preview-background">
                     <canvas
                         ref={frameCanvasRef}
@@ -260,20 +265,28 @@ function PhotoSelectScreen({
                                     data-index={index}
                                     style={slotStyle}
                                 >
-                                    <input
-                                        type="file"
-                                        id={`photoInput${index}`}
-                                        accept="image/*"
-                                        capture="environment"
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => handleFileSelect(index, e)}
-                                    />
-                                    <label htmlFor={`photoInput${index}`} className="photo-slot-label">
+                                    {allowPhotoChange && (
+                                        <input
+                                            type="file"
+                                            id={`photoInput${index}`}
+                                            accept="image/*"
+                                            capture="environment"
+                                            style={{ display: 'none' }}
+                                            onChange={(e) => handleFileSelect(index, e)}
+                                        />
+                                    )}
+                                    <label 
+                                        htmlFor={allowPhotoChange ? `photoInput${index}` : undefined}
+                                        className="photo-slot-label"
+                                        style={{ cursor: allowPhotoChange ? 'pointer' : 'default' }}
+                                    >
                                         {!selectedPhotos[index] ? (
-                                            <div className="slot-placeholder">
-                                                <span className="slot-number">{index + 1}</span>
-                                                <span className="slot-text">사진 선택</span>
-                                            </div>
+                                            allowPhotoChange ? (
+                                                <div className="slot-placeholder">
+                                                    <span className="slot-number">{index + 1}</span>
+                                                    <span className="slot-text">사진 선택</span>
+                                                </div>
+                                            ) : null
                                         ) : (
                                             <canvas
                                                 ref={(el) => (slotCanvasRefs.current[index] = el)}
@@ -281,7 +294,7 @@ function PhotoSelectScreen({
                                             />
                                         )}
                                     </label>
-                                    {selectedPhotos[index] && (
+                                    {selectedPhotos[index] && allowPhotoChange && (
                                         <button
                                             className="slot-remove"
                                             onClick={(e) => {

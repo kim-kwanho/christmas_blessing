@@ -45,5 +45,13 @@
 - Chrome, Edge, Firefox, Safari 최신 버전 권장
 - 모바일에서 접속 시 컴퓨터와 같은 Wi-Fi 네트워크에 연결되어 있어야 합니다
 - Windows 방화벽에서 Python 허용이 필요할 수 있습니다
+
+## 카메라 사용 (Safari/iOS)
+- **중요**: Safari/iOS에서는 HTTPS 또는 localhost에서만 카메라 접근이 가능합니다
+- 로컬 IP 주소(예: 192.168.x.x)로 접속하면 카메라가 작동하지 않을 수 있습니다
+- 해결 방법:
+  1. **로컬 테스트**: `http://localhost:5173` 또는 `http://127.0.0.1:5173`으로 접속
+  2. **Vercel 배포**: HTTPS 자동 제공으로 Safari에서도 정상 작동
+  3. **HTTPS 로컬 서버**: ngrok 등으로 HTTPS 터널링 사용
 - 사진은 브라우저의 파일 선택 기능을 통해 갤러리에서 선택합니다
 
