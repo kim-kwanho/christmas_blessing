@@ -56,8 +56,8 @@
 
     .camera-preview-wrapper {
         width: 100%;
-        aspect-ratio: 4 / 3; /* PC에서는 4:3 비율로 더 넓게 */
-        max-height: 500px;
+        aspect-ratio: 2 / 3; /* 10cm x 15cm 비율 */
+        max-height: 600px;
         margin-bottom: 25px;
     }
 
@@ -107,9 +107,8 @@
     }
 
     .camera-preview-wrapper {
-        aspect-ratio: 4 / 3;
-        min-height: 550px;
-        max-height: 650px;
+        aspect-ratio: 2 / 3; /* 10cm x 15cm 비율 */
+        max-height: 700px;
         margin-bottom: 35px;
     }
 
@@ -172,21 +171,22 @@
 .camera-preview-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: 3 / 4; /* 모바일 기본 비율 */
+    /* 프레임 슬롯 비율: width 0.44, height 0.42 -> 0.44/0.42 = 약 1.048:1 */
+    aspect-ratio: 0.44 / 0.42; /* 슬롯 비율 (민트색 영역 비율) */
     background: #000;
     border-radius: 15px;
     overflow: hidden;
     margin-bottom: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    max-height: 50vh; /* 화면 높이의 50%로 제한 */
+    max-height: 60vh; /* 화면 높이의 60%로 제한 */
     flex-shrink: 0;
 }
 
-/* 태블릿 이상에서는 4:3 비율 */
+/* 태블릿 이상에서도 동일한 슬롯 비율 유지 */
 @media (min-width: 768px) {
     .camera-preview-wrapper {
-        aspect-ratio: 4 / 3;
-        max-height: 60vh;
+        aspect-ratio: 0.44 / 0.42;
+        max-height: 65vh;
     }
 }
 
