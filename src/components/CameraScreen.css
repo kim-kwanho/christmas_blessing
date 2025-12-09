@@ -5,7 +5,7 @@
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px;
+    padding: 10px;
     overflow: hidden;
 }
 
@@ -13,48 +13,48 @@
     width: 100%;
     max-width: 600px;
     background: white;
-    border-radius: 20px;
-    padding: 20px;
+    border-radius: 15px;
+    padding: 15px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 40px);
+    height: calc(100vh - 20px);
     overflow: hidden;
 }
 
 /* PC 화면 최적화 */
 @media (min-width: 1024px) {
     .camera-screen {
-        padding: 30px;
+        padding: 15px;
     }
 
     .camera-container {
-        max-width: 1000px;
-        padding: 50px 60px;
+        max-width: 800px;
+        padding: 20px;
         display: flex;
         flex-direction: column;
-        height: auto;
+        height: calc(100vh - 30px);
     }
 
     .camera-header {
-        margin-bottom: 30px;
-    }
-
-    .camera-header h2 {
-        font-size: 36px;
         margin-bottom: 15px;
     }
 
+    .camera-header h2 {
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+
     .camera-subtitle {
-        font-size: 20px;
+        font-size: 16px;
     }
 
     .camera-preview-wrapper {
         width: 100%;
         aspect-ratio: 2 / 3; /* 2:3 비율 (세로 3) */
-        max-height: 600px;
-        margin-bottom: 25px;
+        flex: 1;
+        margin-bottom: 15px;
     }
 
     .countdown-number {
@@ -64,8 +64,9 @@
     }
 
     .camera-controls {
-        gap: 20px;
-        margin-top: 10px;
+        gap: 15px;
+        margin-top: 5px;
+        padding-top: 10px;
     }
 
     .btn-start-camera,
@@ -149,18 +150,18 @@
 
 .camera-header {
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     flex-shrink: 0;
 }
 
 .camera-header h2 {
-    font-size: 28px;
+    font-size: 24px;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .camera-subtitle {
-    font-size: 16px;
+    font-size: 14px;
     color: #666;
 }
 
@@ -170,19 +171,19 @@
     /* 2:3 비율 (세로 3) */
     aspect-ratio: 2 / 3;
     background: #000;
-    border-radius: 15px;
+    border-radius: 10px;
     overflow: hidden;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    max-height: 60vh; /* 화면 높이의 60%로 제한 */
-    flex-shrink: 0;
+    flex: 1;
+    min-height: 0;
 }
 
 /* 태블릿 이상에서도 동일한 2:3 비율 유지 */
 @media (min-width: 768px) {
     .camera-preview-wrapper {
         aspect-ratio: 2 / 3;
-        max-height: 65vh;
+        flex: 1;
     }
 }
 
@@ -354,16 +355,13 @@
 
 .camera-controls {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     justify-content: center;
     flex-wrap: wrap;
     margin-top: auto;
-    padding-top: 15px;
+    padding-top: 10px;
     flex-shrink: 0;
-    position: sticky;
-    bottom: 0;
-    background: white;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
 }
 
 /* PC에서 버튼 가로 배치 최적화 */
@@ -388,31 +386,31 @@
 /* 모바일 반응형 */
 @media (max-width: 768px) {
     .camera-screen {
-        padding: 10px;
+        padding: 5px;
     }
 
     .camera-container {
-        padding: 15px;
-        border-radius: 15px;
-        max-height: calc(100vh - 20px);
+        padding: 10px;
+        border-radius: 10px;
+        height: calc(100vh - 10px);
     }
 
     .camera-header {
-        margin-bottom: 10px;
-    }
-
-    .camera-header h2 {
-        font-size: 22px;
         margin-bottom: 8px;
     }
 
+    .camera-header h2 {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+
     .camera-subtitle {
-        font-size: 14px;
+        font-size: 12px;
     }
 
     .camera-preview-wrapper {
-        margin-bottom: 15px;
-        max-height: 45vh;
+        margin-bottom: 10px;
+        flex: 1;
     }
 
     .countdown-number {
