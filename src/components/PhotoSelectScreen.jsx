@@ -110,13 +110,16 @@ function PhotoSelectScreen({
 
     const drawPhotoInSlot = useCallback((index, photoSrc) => {
         const canvas = slotCanvasRefs.current[index]
-        if (!canvas || !frameCanvasRef.current) return
+        if (!canvas || !frameCanvasRef.current || !frame) return
 
-        const ctx = canvas.getContext('2d')
         const slot = frame.layout.slots[index]
+        if (!slot) return
+
         const frameRect = frameCanvasRef.current.getBoundingClientRect()
         const frameWidth = frameRect.width
         const frameHeight = frameRect.height
+
+        if (frameWidth === 0 || frameHeight === 0) return
 
         const frameBorderWidth = frame.layout.frameWidth || 15
         const bottomHeight = frameHeight * 0.08
@@ -130,58 +133,124 @@ function PhotoSelectScreen({
         const width = Math.floor(slot.width * frameInnerWidth)
         const height = Math.floor(slot.height * frameInnerHeight)
 
+        if (width === 0 || height === 0) return
+
         const devicePixelRatio = window.devicePixelRatio || 2
-        canvas.width = width * devicePixelRatio
-        canvas.height = height * devicePixelRatio
+        const canvasWidth = width * devicePixelRatio
+        const canvasHeight = height * devicePixelRatio
+
+        // Canvas 크기 설정
+        canvas.width = canvasWidth
+        canvas.height = canvasHeight
         canvas.style.width = width + 'px'
         canvas.style.height = height + 'px'
         canvas.style.left = `${x}px`
         canvas.style.top = `${y}px`
         canvas.style.position = 'absolute'
 
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+
+        // 초기화
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight)
         ctx.scale(devicePixelRatio, devicePixelRatio)
 
         const img = new Image()
+        img.crossOrigin = 'anonymous'
+        
         img.onload = () => {
-            ctx.clearRect(0, 0, width, height)
+            // 다시 한번 확인 (컴포넌트가 언마운트되었을 수 있음)
+            if (!canvas || !frameCanvasRef.current) return
+
+            // Canvas 크기 재확인 및 설정
+            const currentFrameRect = frameCanvasRef.current.getBoundingClientRect()
+            const currentFrameWidth = currentFrameRect.width
+            const currentFrameHeight = currentFrameRect.height
+
+            if (currentFrameWidth === 0 || currentFrameHeight === 0) return
+
+            const currentFrameBorderWidth = frame.layout.frameWidth || 15
+            const currentBottomHeight = currentFrameHeight * 0.08
+            const currentFrameInnerWidth = currentFrameWidth - (currentFrameBorderWidth * 2)
+            const currentFrameInnerHeight = currentFrameHeight - currentFrameBorderWidth - currentBottomHeight
+
+            const currentX = Math.floor(currentFrameBorderWidth + (slot.x * currentFrameInnerWidth))
+            const currentY = Math.floor(currentFrameBorderWidth + (slot.y * currentFrameInnerHeight))
+            const currentWidth = Math.floor(slot.width * currentFrameInnerWidth)
+            const currentHeight = Math.floor(slot.height * currentFrameInnerHeight)
+
+            if (currentWidth === 0 || currentHeight === 0) return
+
+            // Canvas 크기 재설정
+            const currentCanvasWidth = currentWidth * devicePixelRatio
+            const currentCanvasHeight = currentHeight * devicePixelRatio
+
+            canvas.width = currentCanvasWidth
+            canvas.height = currentCanvasHeight
+            canvas.style.width = currentWidth + 'px'
+            canvas.style.height = currentHeight + 'px'
+            canvas.style.left = `${currentX}px`
+            canvas.style.top = `${currentY}px`
+
+            const ctx = canvas.getContext('2d')
+            if (!ctx) return
+
+            // Context 초기화
+            ctx.setTransform(1, 0, 0, 1, 0, 0) // Transform 리셋
+            ctx.clearRect(0, 0, currentCanvasWidth, currentCanvasHeight)
+            ctx.scale(devicePixelRatio, devicePixelRatio)
+
+            // 배경을 슬롯 색상으로 채우기
+            if (frame.layout.slotColor) {
+                ctx.fillStyle = frame.layout.slotColor
+                ctx.fillRect(0, 0, currentWidth, currentHeight)
+            }
+
             ctx.save()
             ctx.beginPath()
-            ctx.rect(0, 0, width, height)
+            ctx.rect(0, 0, currentWidth, currentHeight)
             ctx.clip()
 
             const imgAspect = img.width / img.height
-            const slotAspect = width / height
+            const slotAspect = currentWidth / currentHeight
             const transform = photoTransforms[index] || { x: 0, y: 0 }
 
             let drawWidth, drawHeight, drawX, drawY
 
             if (imgAspect > slotAspect) {
-                drawHeight = height
-                drawWidth = height * imgAspect
-                drawX = (width - drawWidth) / 2 + transform.x
+                // 이미지가 더 넓음 - 높이에 맞춤 (이미지가 슬롯을 완전히 채움)
+                drawHeight = currentHeight
+                drawWidth = currentHeight * imgAspect
+                drawX = (currentWidth - drawWidth) / 2 + transform.x
                 drawY = transform.y
             } else {
-                drawWidth = width
-                drawHeight = width / imgAspect
+                // 이미지가 더 높음 - 너비에 맞춤 (이미지가 슬롯을 완전히 채움)
+                drawWidth = currentWidth
+                drawHeight = currentWidth / imgAspect
                 drawX = transform.x
-                drawY = (height - drawHeight) / 2 + transform.y
+                drawY = (currentHeight - drawHeight) / 2 + transform.y
             }
 
+            // 이미지 그리기
             ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight)
             ctx.restore()
         }
+        
         img.onerror = () => {
             console.error('이미지 로드 실패:', photoSrc)
         }
+        
         img.src = photoSrc
-    }, [frame, photoTransforms, slotPositions])
+    }, [frame, photoTransforms])
 
     useEffect(() => {
         if (!frame) return
         
+        // 프레임 배경 그리기
         drawFrameBackground()
+        
         // 프레임이 그려진 후 슬롯 위치 계산
-        const timer = setTimeout(() => {
+        const timer1 = setTimeout(() => {
             calculateSlotPositions()
         }, 100)
         
@@ -196,19 +265,35 @@ function PhotoSelectScreen({
         window.addEventListener('resize', handleResize)
         
         return () => {
-            clearTimeout(timer)
+            clearTimeout(timer1)
             window.removeEventListener('resize', handleResize)
         }
     }, [frame, calculateSlotPositions, drawFrameBackground])
 
     useEffect(() => {
-        if (!frame || slotPositions.every(p => p === null)) return
+        if (!frame) return
         
-        selectedPhotos.forEach((photo, index) => {
-            if (photo && slotPositions[index]) {
-                drawPhotoInSlot(index, photo)
-            }
-        })
+        // slotPositions가 계산될 때까지 대기
+        if (slotPositions.every(p => p === null)) {
+            return
+        }
+        
+        // 프레임이 완전히 그려진 후 사진을 그리기 위해 약간의 딜레이
+        const timer = setTimeout(() => {
+            // 각 슬롯에 사진 배치 (순차적으로)
+            selectedPhotos.forEach((photo, index) => {
+                if (photo && slotPositions[index]) {
+                    // 각 사진을 약간의 간격을 두고 그리기
+                    setTimeout(() => {
+                        drawPhotoInSlot(index, photo)
+                    }, index * 50)
+                }
+            })
+        }, 300) // 프레임 렌더링 후 충분한 시간 대기
+        
+        return () => {
+            clearTimeout(timer)
+        }
     }, [selectedPhotos, photoTransforms, frame, slotPositions, drawPhotoInSlot])
 
     const handleFileSelect = (index, event) => {

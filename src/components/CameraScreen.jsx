@@ -314,9 +314,9 @@ function CameraScreen({ onCaptureComplete }) {
         })
     }
 
-    // 연속 촬영 시작 (5장 자동 촬영)
+    // 연속 촬영 시작 (4장 자동 촬영)
     const startCapture = async () => {
-        if (isCapturing || capturedPhotos.length >= 5) return
+        if (isCapturing || capturedPhotos.length >= 4) return
 
         // 카메라가 활성화되지 않은 경우
         if (!streamRef.current || cameraStatus !== 'active') {
@@ -334,8 +334,8 @@ function CameraScreen({ onCaptureComplete }) {
         const newPhotos = [...capturedPhotos]
 
         try {
-            // 5장 연속 촬영
-            for (let i = 0; i < 5; i++) {
+            // 4장 연속 촬영
+            for (let i = 0; i < 4; i++) {
                 const photoData = await captureSinglePhoto(i + 1)
                 
                 if (photoData) {
@@ -347,7 +347,7 @@ function CameraScreen({ onCaptureComplete }) {
                 }
 
                 // 마지막 사진이 아니면 다음 촬영 전 잠시 대기
-                if (i < 4) {
+                if (i < 3) {
                     setCountdown(null)
                     await new Promise(resolve => setTimeout(resolve, 500))
                 }
@@ -356,8 +356,8 @@ function CameraScreen({ onCaptureComplete }) {
             setIsCapturing(false)
             setCountdown(null)
 
-            // 5장 모두 촬영 완료
-            if (newPhotos.length === 5) {
+            // 4장 모두 촬영 완료
+            if (newPhotos.length === 4) {
                 setTimeout(() => {
                     onCaptureComplete(newPhotos)
                 }, 500)
@@ -382,7 +382,7 @@ function CameraScreen({ onCaptureComplete }) {
         }
     }
 
-    const remainingPhotos = 5 - capturedPhotos.length
+    const remainingPhotos = 4 - capturedPhotos.length
 
     return (
         <div className="camera-screen">
@@ -391,8 +391,8 @@ function CameraScreen({ onCaptureComplete }) {
                     <h2>사진 촬영</h2>
                     <p className="camera-subtitle">
                         {capturedPhotos.length > 0 
-                            ? `${capturedPhotos.length}/5장 촬영 완료` 
-                            : '5장의 사진을 촬영해주세요'}
+                            ? `${capturedPhotos.length}/4장 촬영 완료` 
+                            : '4장의 사진을 촬영해주세요'}
                     </p>
                 </div>
 
@@ -442,7 +442,7 @@ function CameraScreen({ onCaptureComplete }) {
                     {capturedPhotos.length > 0 && (
                         <div className="captured-indicator">
                             <div className="captured-badge">
-                                {capturedPhotos.length}/5
+                                {capturedPhotos.length}/4
                             </div>
                         </div>
                     )}
@@ -473,11 +473,11 @@ function CameraScreen({ onCaptureComplete }) {
                     <button
                         className="btn btn-primary btn-capture"
                         onClick={startCapture}
-                        disabled={isCapturing || capturedPhotos.length >= 5 || cameraStatus !== 'active'}
+                        disabled={isCapturing || capturedPhotos.length >= 4 || cameraStatus !== 'active'}
                     >
                         {isCapturing 
                             ? `촬영 중... ${countdown || ''}초` 
-                            : capturedPhotos.length >= 5
+                            : capturedPhotos.length >= 4
                             ? '촬영 완료'
                             : cameraStatus !== 'active'
                             ? cameraStatus === 'requesting'

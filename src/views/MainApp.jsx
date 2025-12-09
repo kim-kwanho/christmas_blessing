@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { initDB, savePhotoToDB, loadPhotosFromDB } from '../lib/database'
 import { frames } from '../lib/frames'
 import CameraScreen from '../components/CameraScreen'
-import PhotoCandidateScreen from '../components/PhotoCandidateScreen'
 import FrameSelectScreen from '../components/FrameSelectScreen'
 import PhotoSelectScreen from '../components/PhotoSelectScreen'
 import ResultScreen from '../components/ResultScreen'
@@ -12,8 +11,7 @@ import './MainApp.css'
 
 function MainApp() {
     const [currentScreen, setCurrentScreen] = useState('camera') // 'camera'로 시작
-    const [capturedPhotos, setCapturedPhotos] = useState([]) // 촬영한 5장
-    const [selectedPhotos, setSelectedPhotos] = useState([null, null, null, null]) // 후보지에서 선택한 4장
+    const [selectedPhotos, setSelectedPhotos] = useState([null, null, null, null]) // 촬영한 4장
     const [selectedFrame, setSelectedFrame] = useState(null)
     const [photoTransforms, setPhotoTransforms] = useState([
         { x: 0, y: 0 },
@@ -40,27 +38,17 @@ function MainApp() {
             })
     }, [])
 
-    // 촬영 완료 (5장)
+    // 촬영 완료 (4장)
     const handleCaptureComplete = (photos) => {
-        if (photos && photos.length === 5) {
-            setCapturedPhotos(photos)
-            setCurrentScreen('candidate')
-        }
-    }
-
-    // 후보지에서 4장 선택 완료
-    const handleCandidateSelect = (photos) => {
-        if (!photos) {
-            // 다시 촬영
-            setCapturedPhotos([])
-            setSelectedPhotos([null, null, null, null])
-            setCurrentScreen('camera')
-            return
-        }
-
-        if (photos.length === 4) {
-            // 선택한 4장을 기본 프레임(첫 번째 프레임)에 자동 배치
-            setSelectedPhotos(photos)
+        if (photos && photos.length === 4) {
+            // 촬영한 4장을 순서대로 selectedPhotos에 배치
+            const newSelectedPhotos = [...photos]
+            // 4장이 안 찍혔을 경우를 대비해 null로 채움
+            while (newSelectedPhotos.length < 4) {
+                newSelectedPhotos.push(null)
+            }
+            
+            setSelectedPhotos(newSelectedPhotos.slice(0, 4))
             setSelectedFrame(frames[0]) // 기본 프레임 사용
             setPhotoTransforms([
                 { x: 0, y: 0 },
@@ -68,7 +56,8 @@ function MainApp() {
                 { x: 0, y: 0 },
                 { x: 0, y: 0 }
             ])
-            setCurrentScreen('photoSelect') // 사진 배치 확인 화면으로
+            // 프레임 선택 화면을 거치지 않고 바로 사진 배치 화면으로
+            setCurrentScreen('photoSelect')
         }
     }
 
@@ -128,7 +117,6 @@ function MainApp() {
     const handleNewPhoto = () => {
         // 처음부터 다시 시작
         setCurrentScreen('camera')
-        setCapturedPhotos([])
         setSelectedPhotos([null, null, null, null])
         setSelectedFrame(null)
         setPhotoTransforms([
@@ -154,13 +142,6 @@ function MainApp() {
                 />
             )}
 
-            {currentScreen === 'candidate' && capturedPhotos.length === 5 && (
-                <PhotoCandidateScreen
-                    photos={capturedPhotos}
-                    onSelectComplete={handleCandidateSelect}
-                />
-            )}
-            
             {currentScreen === 'frameSelect' && (
                 <FrameSelectScreen 
                     frames={frames}
