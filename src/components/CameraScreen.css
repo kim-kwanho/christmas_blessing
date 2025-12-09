@@ -2,12 +2,12 @@
     width: 100%;
     min-height: 100vh;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 20px;
-    padding-top: 40px;
-    padding-bottom: 40px;
+    padding-top: 20px;
+    padding-bottom: 20px;
     overflow-y: auto;
 }
 
@@ -16,11 +16,13 @@
     max-width: 600px;
     background: white;
     border-radius: 20px;
-    padding: 30px;
+    padding: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     margin: 0 auto;
     display: flex;
     flex-direction: column;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
 }
 
 /* PC 화면 최적화 */
@@ -55,9 +57,8 @@
     .camera-preview-wrapper {
         width: 100%;
         aspect-ratio: 4 / 3; /* PC에서는 4:3 비율로 더 넓게 */
-        min-height: 450px;
-        max-height: 550px;
-        margin-bottom: 30px;
+        max-height: 500px;
+        margin-bottom: 25px;
     }
 
     .countdown-number {
@@ -153,7 +154,8 @@
 
 .camera-header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    flex-shrink: 0;
 }
 
 .camera-header h2 {
@@ -174,15 +176,17 @@
     background: #000;
     border-radius: 15px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    min-height: 400px;
+    max-height: 50vh; /* 화면 높이의 50%로 제한 */
+    flex-shrink: 0;
 }
 
 /* 태블릿 이상에서는 4:3 비율 */
 @media (min-width: 768px) {
     .camera-preview-wrapper {
         aspect-ratio: 4 / 3;
+        max-height: 60vh;
     }
 }
 
@@ -358,7 +362,12 @@
     justify-content: center;
     flex-wrap: wrap;
     margin-top: auto;
-    padding-top: 10px;
+    padding-top: 15px;
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding-bottom: 10px;
 }
 
 /* PC에서 버튼 가로 배치 최적화 */
@@ -382,17 +391,34 @@
 
 /* 모바일 반응형 */
 @media (max-width: 768px) {
+    .camera-screen {
+        padding: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
     .camera-container {
-        padding: 20px;
+        padding: 15px;
         border-radius: 15px;
+        max-height: calc(100vh - 20px);
+    }
+
+    .camera-header {
+        margin-bottom: 10px;
     }
 
     .camera-header h2 {
-        font-size: 24px;
+        font-size: 22px;
+        margin-bottom: 8px;
     }
 
     .camera-subtitle {
         font-size: 14px;
+    }
+
+    .camera-preview-wrapper {
+        margin-bottom: 15px;
+        max-height: 45vh;
     }
 
     .countdown-number {
@@ -401,20 +427,47 @@
         height: 100px;
     }
 
-    .btn-capture {
-        min-width: 150px;
+    .camera-controls {
+        gap: 10px;
+        padding-top: 10px;
+        padding-bottom: 5px;
+    }
+
+    .btn-capture,
+    .btn-start-camera,
+    .btn-secondary {
+        min-width: 140px;
         font-size: 16px;
-        padding: 12px 24px;
+        padding: 12px 20px;
     }
 }
 
 @media (max-width: 480px) {
+    .camera-screen {
+        padding: 8px;
+    }
+
     .camera-container {
-        padding: 15px;
+        padding: 12px;
+        max-height: calc(100vh - 16px);
+    }
+
+    .camera-header {
+        margin-bottom: 8px;
     }
 
     .camera-header h2 {
         font-size: 20px;
+        margin-bottom: 6px;
+    }
+
+    .camera-subtitle {
+        font-size: 13px;
+    }
+
+    .camera-preview-wrapper {
+        margin-bottom: 12px;
+        max-height: 40vh;
     }
 
     .countdown-number {
@@ -425,10 +478,16 @@
 
     .camera-controls {
         flex-direction: column;
+        gap: 8px;
+        padding-top: 8px;
     }
 
-    .btn-capture {
+    .btn-capture,
+    .btn-start-camera,
+    .btn-secondary {
         width: 100%;
+        font-size: 16px;
+        padding: 14px 20px;
     }
 }
 
