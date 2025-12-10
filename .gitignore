@@ -7,6 +7,15 @@ node_modules/
 /coverage
 
 # Production
+/dist
+
+# Server uploads
+/uploads
+
+# Environment variables
+.env
+.env.local
+.env.production
 /build
 /dist
 /.vercel

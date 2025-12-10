@@ -21,30 +21,51 @@ pnpm install
 
 2. **개발 서버 실행**
 
+**옵션 1: 프론트엔드와 백엔드 동시 실행 (권장)**
 ```bash
-npm run dev
+npm run dev:all
 # 또는
-pnpm dev
+pnpm dev:all
+```
+
+**옵션 2: 개별 실행**
+```bash
+# 터미널 1: 프론트엔드 개발 서버
+npm run dev
+
+# 터미널 2: 백엔드 API 서버
+npm run dev:server
 ```
 
 3. **브라우저에서 접속**
 
-개발 서버가 시작되면 터미널에 표시된 주소(일반적으로 `http://localhost:5173`)로 접속하세요.
+- 프론트엔드: `http://localhost:8000` (또는 터미널에 표시된 주소)
+- 백엔드 API: `http://localhost:3001/api`
+
+**참고**: QR 코드 기능을 사용하려면 백엔드 서버가 실행되어 있어야 합니다.
 
 ## 📁 프로젝트 구조
 
 ```
-src/
-├── components/          # 재사용 가능한 컴포넌트
-│   ├── common/         # 공통 컴포넌트 (Header, SideMenu)
-│   ├── CameraScreen.jsx        # 카메라 촬영 화면
-│   ├── FrameSelectScreen.jsx  # 프레임 선택 화면
-│   ├── PhotoSelectScreen.jsx  # 사진 배치 화면
-│   └── ResultScreen.jsx        # 결과 화면
-├── views/              # 페이지별 뷰 컴포넌트
-│   ├── MainApp.jsx     # 메인 앱
-│   └── StartScreen.jsx # 시작 화면
-├── pages/              # 페이지 컴포넌트
+├── server.js           # Express 백엔드 서버
+├── uploads/            # 서버에 저장된 결과물 (자동 생성)
+├── src/
+│   ├── components/     # 재사용 가능한 컴포넌트
+│   │   ├── common/     # 공통 컴포넌트 (Header, SideMenu)
+│   │   ├── CameraScreen.jsx        # 카메라 촬영 화면
+│   │   ├── FrameSelectScreen.jsx  # 프레임 선택 화면
+│   │   ├── PhotoSelectScreen.jsx  # 사진 배치 화면
+│   │   └── ResultScreen.jsx        # 결과 화면
+│   ├── views/          # 페이지별 뷰 컴포넌트
+│   │   ├── MainApp.jsx     # 메인 앱
+│   │   └── StartScreen.jsx # 시작 화면
+│   ├── pages/          # 페이지 컴포넌트
+│   │   ├── admin/      # 관리자 페이지
+│   │   └── ResultViewPage.jsx  # QR 코드로 접근하는 결과물 페이지
+│   └── lib/            # 유틸리티 및 설정
+│       ├── api.js      # 서버 API 호출 함수
+│       ├── database.js # IndexedDB 로컬 저장소
+│       └── frames.js   # 프레임 설정
 │   └── admin/          # 관리자 페이지
 ├── lib/                # 유틸리티 및 설정
 │   ├── database.js     # IndexedDB 관리
@@ -60,11 +81,20 @@ src/
 ## 🔧 개발 명령어
 
 ```bash
-# 개발 서버 실행
+# 프론트엔드와 백엔드 동시 실행 (권장)
+npm run dev:all
+
+# 프론트엔드 개발 서버만 실행
 npm run dev
+
+# 백엔드 API 서버만 실행
+npm run dev:server
 
 # 프로덕션 빌드
 npm run build
+
+# 프로덕션 서버 실행 (빌드 후)
+npm start
 
 # 프로덕션 미리보기
 npm run preview
@@ -80,6 +110,7 @@ npm run lint
 * **사진 배치**: 촬영한 사진을 프레임에 맞춰 배치 및 위치 조정
 * **인생네컷 생성**: 프레임과 사진을 합성하여 인생네컷 생성
 * **저장 및 다운로드**: 생성된 인생네컷을 저장하고 다운로드
+* **QR 코드 생성**: 결과물에 대한 고유 QR 코드 생성 (다른 기기에서도 접근 가능)
 * **갤러리**: IndexedDB를 사용한 로컬 저장소에 저장된 인생네컷 관리
 
 ## 🎨 기술 스택
@@ -87,8 +118,10 @@ npm run lint
 * **React 18** - UI 라이브러리
 * **Vite** - 빌드 도구
 * **React Router** - 라우팅
+* **Express** - 백엔드 API 서버
 * **IndexedDB** - 로컬 데이터 저장
 * **Canvas API** - 이미지 합성
+* **QRCode** - QR 코드 생성
 
 ## 📱 모바일 지원
 

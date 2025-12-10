@@ -1,8 +1,13 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
+import QRCode from 'qrcode'
 import './ResultScreen.css'
 
 function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPhoto }) {
     const canvasRef = useRef(null)
+    const [qrCodeUrl, setQrCodeUrl] = useState(null)
+    const [qrModalOpen, setQrModalOpen] = useState(false)
+    const [photoId, setPhotoId] = useState(null)
+    const [isGeneratingQR, setIsGeneratingQR] = useState(false)
 
     const getMoveLimits = useCallback((img, slotWidth, slotHeight) => {
         const imgAspect = img.width / img.height
@@ -279,6 +284,84 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
             })
     }
 
+    // QR 코드 생성
+    const handleGenerateQR = async () => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+
+        setIsGeneratingQR(true)
+
+        try {
+            // 고유 ID 생성
+            const uniqueId = `lifecut_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
+            setPhotoId(uniqueId)
+
+            // 현재 결과물을 이미지로 변환
+            const imageData = canvas.toDataURL('image/png')
+
+            // 서버에 저장 (다른 기기에서도 접근 가능하도록)
+            const { savePhotoToServer } = await import('../lib/api')
+            await savePhotoToServer({
+                id: uniqueId,
+                imageData: imageData,
+                timestamp: new Date().toISOString()
+            })
+
+            // 로컬 IndexedDB에도 저장 (백업)
+            try {
+                const { initDB, savePhotoToDB } = await import('../lib/database')
+                const db = await initDB()
+                const photoData = {
+                    id: uniqueId,
+                    data: imageData,
+                    timestamp: new Date().toISOString()
+                }
+                await savePhotoToDB(db, photoData)
+            } catch (localError) {
+                console.warn('로컬 저장 실패 (무시):', localError)
+            }
+
+            // QR 코드 URL 생성 (현재 도메인 + 고유 ID)
+            const currentUrl = window.location.origin
+            const qrUrl = `${currentUrl}/result/${uniqueId}`
+
+            // QR 코드 생성
+            const qrDataUrl = await QRCode.toDataURL(qrUrl, {
+                width: 300,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            })
+
+            setQrCodeUrl(qrDataUrl)
+            setQrModalOpen(true)
+        } catch (error) {
+            console.error('QR 코드 생성 실패:', error)
+            const errorMessage = error.message || '알 수 없는 오류가 발생했습니다.'
+            
+            // 서버 연결 오류인 경우 더 명확한 안내
+            if (errorMessage.includes('서버에 연결할 수 없습니다') || 
+                errorMessage.includes('Failed to fetch') ||
+                errorMessage.includes('NetworkError')) {
+                alert(
+                    '⚠️ 서버 연결 실패\n\n' +
+                    'QR 코드 기능을 사용하려면 백엔드 서버가 실행되어 있어야 합니다.\n\n' +
+                    '다음 명령어로 서버를 실행해주세요:\n' +
+                    'npm run dev:server\n\n' +
+                    '또는 프론트엔드와 백엔드를 동시에 실행:\n' +
+                    'npm run dev:all'
+                )
+            } else {
+                alert(`QR 코드 생성에 실패했습니다.\n\n오류: ${errorMessage}`)
+            }
+        } finally {
+            setIsGeneratingQR(false)
+        }
+    }
+
+
 
     return (
         <div className="screen active">
@@ -294,10 +377,43 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                     <button className="btn btn-secondary" onClick={handleDownload}>
                         📥 다운로드
                     </button>
+                    <button 
+                        className="btn btn-secondary" 
+                        onClick={handleGenerateQR}
+                        disabled={isGeneratingQR}
+                    >
+                        {isGeneratingQR ? '⏳ QR 생성 중...' : '📱 QR 생성'}
+                    </button>
                     <button className="btn btn-secondary" onClick={onNewPhoto}>
                         새로 만들기
                     </button>
                 </div>
+
+                {/* QR 코드 모달 */}
+                {qrModalOpen && qrCodeUrl && (
+                    <div className="qr-modal-overlay" onClick={() => setQrModalOpen(false)}>
+                        <div className="qr-modal-content" onClick={(e) => e.stopPropagation()}>
+                            <button 
+                                className="qr-modal-close"
+                                onClick={() => setQrModalOpen(false)}
+                            >
+                                ✕
+                            </button>
+                            <h3>📱 QR 코드</h3>
+                            <p style={{ marginBottom: '10px' }}>
+                                이 QR 코드를 스캔하면<br />
+                                <strong>다른 기기에서도 결과물을 다운로드</strong>할 수 있습니다.
+                            </p>
+                            <div className="qr-code-image">
+                                <img src={qrCodeUrl} alt="QR Code" />
+                            </div>
+                            <p className="qr-url">{window.location.origin}/result/{photoId}</p>
+                            <p style={{ marginTop: '15px', fontSize: '12px', color: '#666' }}>
+                                💡 같은 네트워크에 연결된 기기에서 접근 가능합니다
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )
