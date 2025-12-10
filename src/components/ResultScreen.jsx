@@ -49,12 +49,39 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
 
         // 하단 텍스트
         if (frame.layout.bottomText) {
-            ctx.fillStyle = '#ffffff'
-            ctx.font = '24px Arial'
+            ctx.fillStyle = frame.layout.textColor || '#ffffff'
+            // FrameSelectScreen과 동일한 비율로 텍스트 크기 조정 (12px * (canvasWidth/200))
+            const fontSize = Math.round(12 * (canvasWidth / 200))
+            ctx.font = `bold ${fontSize}px sans-serif`
             ctx.textAlign = 'center'
             ctx.textBaseline = 'middle'
             ctx.fillText(frame.layout.bottomText, canvasWidth / 2, bottomY + bottomHeight / 2)
         }
+
+        // 십자가 선 그리기 (사진 위에 그려지도록 마지막에 그리기)
+        const frameBorderWidth = frame.layout.frameWidth || 15
+        const frameInnerX = frameBorderWidth
+        const frameInnerY = frameBorderWidth
+        const frameInnerWidth = canvasWidth - (frameBorderWidth * 2)
+        const frameInnerHeight = canvasHeight - frameBorderWidth - bottomHeight
+        
+        ctx.strokeStyle = frame.layout.frameColor || '#808080'
+        // FrameSelectScreen과 동일한 비율로 선 굵기 조정 (10px * (canvasWidth/200))
+        ctx.lineWidth = 10 * (canvasWidth / 200)
+        
+        // 가로선 (중앙)
+        const centerY = frameInnerY + (frameInnerHeight / 2)
+        ctx.beginPath()
+        ctx.moveTo(frameInnerX, centerY)
+        ctx.lineTo(frameInnerX + frameInnerWidth, centerY)
+        ctx.stroke()
+        
+        // 세로선 (중앙)
+        const centerX = frameInnerX + (frameInnerWidth / 2)
+        ctx.beginPath()
+        ctx.moveTo(centerX, frameInnerY)
+        ctx.lineTo(centerX, frameInnerY + frameInnerHeight)
+        ctx.stroke()
     }, [frame])
 
     const composeLifecut = useCallback(() => {
@@ -83,18 +110,7 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
         ctx.fillStyle = '#ffffff'
         ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
-        // 슬롯 배경색 그리기
-        if (frame.layout.slotColor && frame.layout.slots) {
-            frame.layout.slots.forEach((slot) => {
-                const x = Math.floor(slot.x * canvasWidth)
-                const y = Math.floor(slot.y * canvasHeight)
-                const width = Math.floor(slot.width * canvasWidth)
-                const height = Math.floor(slot.height * canvasHeight)
-
-                ctx.fillStyle = frame.layout.slotColor
-                ctx.fillRect(x, y, width, height)
-            })
-        }
+        // 슬롯 배경색 제거 (사진이 슬롯을 완전히 채우도록)
 
         // 사진 배치 (비동기 처리)
         let loadedCount = 0
@@ -132,7 +148,7 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                 const width = Math.floor(slot.width * frameInnerWidth)
                 const height = Math.floor(slot.height * frameInnerHeight)
 
-                // 클리핑 영역 설정
+                // 클리핑 영역 설정 (십자가 선이 그려질 수 있도록 주의)
                 ctx.save()
                 ctx.beginPath()
                 ctx.rect(x, y, width, height)
@@ -187,10 +203,7 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
 
                 ctx.restore()
 
-                // 사진 테두리
-                ctx.strokeStyle = frame.layout.frameColor || '#808080'
-                ctx.lineWidth = 2
-                ctx.strokeRect(x, y, width, height)
+                // 사진 테두리 제거 (십자가 선으로 대체)
 
                 loadedCount++
 

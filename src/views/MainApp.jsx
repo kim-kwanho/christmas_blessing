@@ -146,6 +146,7 @@ function MainApp() {
                 <FrameSelectScreen 
                     frames={frames}
                     onFrameSelect={handleFrameSelect}
+                    selectedPhotos={selectedPhotos}
                 />
             )}
             

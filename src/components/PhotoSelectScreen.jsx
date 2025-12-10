@@ -31,9 +31,9 @@ function PhotoSelectScreen({
         canvas.width = width
         canvas.height = height
 
-        // 배경
-        ctx.fillStyle = '#ffffff'
-        ctx.fillRect(0, 0, width, height)
+        // 배경 제거 (투명하게 - 사진이 보이도록)
+        // ctx.fillStyle = '#ffffff'
+        // ctx.fillRect(0, 0, width, height)
 
         // 프레임 내부 영역 계산 (슬롯이 배치될 영역)
         const frameBorderWidth = frame.layout.frameWidth || 15
@@ -43,16 +43,26 @@ function PhotoSelectScreen({
         const frameInnerWidth = width - (frameBorderWidth * 2)
         const frameInnerHeight = height - frameBorderWidth - bottomHeight
 
-        // 슬롯 배경색 (프레임 내부 영역 기준)
-        if (frame.layout.slotColor && frame.layout.slots) {
-            frame.layout.slots.forEach((slot) => {
-                const x = Math.floor(frameInnerX + (slot.x * frameInnerWidth))
-                const y = Math.floor(frameInnerY + (slot.y * frameInnerHeight))
-                const w = Math.floor(slot.width * frameInnerWidth)
-                const h = Math.floor(slot.height * frameInnerHeight)
-                ctx.fillStyle = frame.layout.slotColor
-                ctx.fillRect(x, y, w, h)
-            })
+        // 슬롯 배경색 제거 (사진이 슬롯을 완전히 채우도록)
+
+        // 십자가 선 그리기 (슬롯들 사이의 간격)
+        if (frame.layout.frameColor) {
+            ctx.strokeStyle = frame.layout.frameColor
+            ctx.lineWidth = 10
+            
+            // 가로선 (중앙)
+            const centerY = frameInnerY + (frameInnerHeight / 2)
+            ctx.beginPath()
+            ctx.moveTo(frameInnerX, centerY)
+            ctx.lineTo(frameInnerX + frameInnerWidth, centerY)
+            ctx.stroke()
+            
+            // 세로선 (중앙)
+            const centerX = frameInnerX + (frameInnerWidth / 2)
+            ctx.beginPath()
+            ctx.moveTo(centerX, frameInnerY)
+            ctx.lineTo(centerX, frameInnerY + frameInnerHeight)
+            ctx.stroke()
         }
 
         // 프레임 테두리
@@ -71,7 +81,7 @@ function PhotoSelectScreen({
         if (frame.layout.bottomText) {
             ctx.fillStyle = frame.layout.frameColor || '#333'
             ctx.fillRect(0, height * 0.92, width, height * 0.08)
-            ctx.fillStyle = '#ffffff'
+            ctx.fillStyle = frame.layout.textColor || '#ffffff'
             ctx.font = 'bold 20px sans-serif'
             ctx.textAlign = 'center'
             ctx.fillText(frame.layout.bottomText, width / 2, height - 15)
@@ -97,8 +107,8 @@ function PhotoSelectScreen({
             
             const x = Math.floor(frameInnerX + (slot.x * frameInnerWidth))
             const y = Math.floor(frameInnerY + (slot.y * frameInnerHeight))
-            const width = Math.floor(slot.width * frameInnerWidth)
-            const height = Math.floor(slot.height * frameInnerHeight)
+            const width = Math.ceil(slot.width * frameInnerWidth)
+            const height = Math.ceil(slot.height * frameInnerHeight)
             
             return { x, y, width, height }
         }).filter(p => p !== null)
@@ -108,6 +118,34 @@ function PhotoSelectScreen({
         }
     }, [frame])
 
+    // ResultScreen과 동일한 이동 범위 계산 함수
+    const getMoveLimits = useCallback((img, slotWidth, slotHeight) => {
+        const imgAspect = img.width / img.height
+        const slotAspect = slotWidth / slotHeight
+
+        let drawWidth, drawHeight
+
+        if (imgAspect > slotAspect) {
+            drawHeight = slotHeight
+            drawWidth = slotHeight * imgAspect
+        } else {
+            drawWidth = slotWidth
+            drawHeight = slotWidth / imgAspect
+        }
+
+        const minMoveX = slotWidth - drawWidth
+        const maxMoveX = 0
+        const minMoveY = slotHeight - drawHeight
+        const maxMoveY = 0
+
+        return { minMoveX, maxMoveX, minMoveY, maxMoveY }
+    }, [])
+
+    // ResultScreen과 동일한 이동 값 제한 함수
+    const clampMove = useCallback((value, min, max) => {
+        return Math.max(min, Math.min(max, value))
+    }, [])
+
     const drawPhotoInSlot = useCallback((index, photoSrc) => {
         const canvas = slotCanvasRefs.current[index]
         if (!canvas || !frameCanvasRef.current || !frame) return
@@ -115,23 +153,14 @@ function PhotoSelectScreen({
         const slot = frame.layout.slots[index]
         if (!slot) return
 
-        const frameRect = frameCanvasRef.current.getBoundingClientRect()
-        const frameWidth = frameRect.width
-        const frameHeight = frameRect.height
+        // canvas의 부모 요소(.photo-slot) 찾기
+        const slotElement = canvas.closest('.photo-slot')
+        if (!slotElement) return
 
-        if (frameWidth === 0 || frameHeight === 0) return
-
-        const frameBorderWidth = frame.layout.frameWidth || 15
-        const bottomHeight = frameHeight * 0.08
-        const frameInnerX = frameBorderWidth
-        const frameInnerY = frameBorderWidth
-        const frameInnerWidth = frameWidth - (frameBorderWidth * 2)
-        const frameInnerHeight = frameHeight - frameBorderWidth - bottomHeight
-
-        const x = Math.floor(frameInnerX + (slot.x * frameInnerWidth))
-        const y = Math.floor(frameInnerY + (slot.y * frameInnerHeight))
-        const width = Math.floor(slot.width * frameInnerWidth)
-        const height = Math.floor(slot.height * frameInnerHeight)
+        // 부모 요소의 크기 사용 (이미 올바른 위치에 배치되어 있음)
+        const slotRect = slotElement.getBoundingClientRect()
+        const width = slotRect.width
+        const height = slotRect.height
 
         if (width === 0 || height === 0) return
 
@@ -139,13 +168,13 @@ function PhotoSelectScreen({
         const canvasWidth = width * devicePixelRatio
         const canvasHeight = height * devicePixelRatio
 
-        // Canvas 크기 설정
+        // Canvas 크기 설정 (부모 요소 기준으로 위치 설정)
         canvas.width = canvasWidth
         canvas.height = canvasHeight
         canvas.style.width = width + 'px'
         canvas.style.height = height + 'px'
-        canvas.style.left = `${x}px`
-        canvas.style.top = `${y}px`
+        canvas.style.left = '0px'
+        canvas.style.top = '0px'
         canvas.style.position = 'absolute'
 
         const ctx = canvas.getContext('2d')
@@ -156,28 +185,22 @@ function PhotoSelectScreen({
         ctx.scale(devicePixelRatio, devicePixelRatio)
 
         const img = new Image()
-        img.crossOrigin = 'anonymous'
+        // data URL이나 같은 도메인 이미지인 경우 crossOrigin 설정 불필요
+        if (photoSrc && !photoSrc.startsWith('data:')) {
+            img.crossOrigin = 'anonymous'
+        }
         
         img.onload = () => {
             // 다시 한번 확인 (컴포넌트가 언마운트되었을 수 있음)
-            if (!canvas || !frameCanvasRef.current) return
+            if (!canvas) return
 
-            // Canvas 크기 재확인 및 설정
-            const currentFrameRect = frameCanvasRef.current.getBoundingClientRect()
-            const currentFrameWidth = currentFrameRect.width
-            const currentFrameHeight = currentFrameRect.height
+            // 부모 요소의 크기 재확인
+            const slotElement = canvas.closest('.photo-slot')
+            if (!slotElement) return
 
-            if (currentFrameWidth === 0 || currentFrameHeight === 0) return
-
-            const currentFrameBorderWidth = frame.layout.frameWidth || 15
-            const currentBottomHeight = currentFrameHeight * 0.08
-            const currentFrameInnerWidth = currentFrameWidth - (currentFrameBorderWidth * 2)
-            const currentFrameInnerHeight = currentFrameHeight - currentFrameBorderWidth - currentBottomHeight
-
-            const currentX = Math.floor(currentFrameBorderWidth + (slot.x * currentFrameInnerWidth))
-            const currentY = Math.floor(currentFrameBorderWidth + (slot.y * currentFrameInnerHeight))
-            const currentWidth = Math.floor(slot.width * currentFrameInnerWidth)
-            const currentHeight = Math.floor(slot.height * currentFrameInnerHeight)
+            const slotRect = slotElement.getBoundingClientRect()
+            const currentWidth = slotRect.width
+            const currentHeight = slotRect.height
 
             if (currentWidth === 0 || currentHeight === 0) return
 
@@ -189,8 +212,8 @@ function PhotoSelectScreen({
             canvas.height = currentCanvasHeight
             canvas.style.width = currentWidth + 'px'
             canvas.style.height = currentHeight + 'px'
-            canvas.style.left = `${currentX}px`
-            canvas.style.top = `${currentY}px`
+            canvas.style.left = '0px'
+            canvas.style.top = '0px'
 
             const ctx = canvas.getContext('2d')
             if (!ctx) return
@@ -200,48 +223,127 @@ function PhotoSelectScreen({
             ctx.clearRect(0, 0, currentCanvasWidth, currentCanvasHeight)
             ctx.scale(devicePixelRatio, devicePixelRatio)
 
-            // 배경을 슬롯 색상으로 채우기
-            if (frame.layout.slotColor) {
-                ctx.fillStyle = frame.layout.slotColor
-                ctx.fillRect(0, 0, currentWidth, currentHeight)
-            }
+            // 슬롯 배경색 제거 (사진이 슬롯을 완전히 채우도록)
 
             ctx.save()
             ctx.beginPath()
             ctx.rect(0, 0, currentWidth, currentHeight)
             ctx.clip()
 
+            // ResultScreen과 동일한 로직 사용
             const imgAspect = img.width / img.height
             const slotAspect = currentWidth / currentHeight
             const transform = photoTransforms[index] || { x: 0, y: 0 }
 
-            let drawWidth, drawHeight, drawX, drawY
+            // 이동 범위 계산 (ResultScreen과 동일)
+            const limits = getMoveLimits(img, currentWidth, currentHeight)
+
+            // 이동 값 제한 (ResultScreen과 동일)
+            const offsetX = clampMove(transform.x || 0, limits.minMoveX, limits.maxMoveX)
+            const offsetY = clampMove(transform.y || 0, limits.minMoveY, limits.maxMoveY)
+
+            // 이미지 소스 영역 계산 (크롭) - ResultScreen과 동일
+            let sourceX = 0, sourceY = 0, sourceWidth = img.width, sourceHeight = img.height
 
             if (imgAspect > slotAspect) {
-                // 이미지가 더 넓음 - 높이에 맞춤 (이미지가 슬롯을 완전히 채움)
-                drawHeight = currentHeight
-                drawWidth = currentHeight * imgAspect
-                drawX = (currentWidth - drawWidth) / 2 + transform.x
-                drawY = transform.y
+                const cropWidth = img.height * slotAspect
+                sourceX = (img.width - cropWidth) / 2
+                sourceWidth = cropWidth
             } else {
-                // 이미지가 더 높음 - 너비에 맞춤 (이미지가 슬롯을 완전히 채움)
-                drawWidth = currentWidth
-                drawHeight = currentWidth / imgAspect
-                drawX = transform.x
-                drawY = (currentHeight - drawHeight) / 2 + transform.y
+                const cropHeight = img.width / slotAspect
+                sourceY = (img.height - cropHeight) / 2
+                sourceHeight = cropHeight
             }
 
-            // 이미지 그리기
-            ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight)
+            // 이동에 따른 소스 영역 조정 - ResultScreen과 동일
+            if (limits.maxMoveX > 0) {
+                const moveRatio = offsetX / limits.maxMoveX
+                const maxCropX = (img.width - sourceWidth) / 2
+                sourceX = (img.width - sourceWidth) / 2 - moveRatio * maxCropX
+                sourceX = Math.max(0, Math.min(img.width - sourceWidth, sourceX))
+            }
+
+            if (limits.maxMoveY > 0) {
+                const moveRatio = offsetY / limits.maxMoveY
+                const maxCropY = (img.height - sourceHeight) / 2
+                sourceY = (img.height - sourceHeight) / 2 - moveRatio * maxCropY
+                sourceY = Math.max(0, Math.min(img.height - sourceHeight, sourceY))
+            }
+
+            // 이미지 그리기 (ResultScreen과 동일) - 슬롯을 완전히 채우도록
+            ctx.drawImage(
+                img,
+                sourceX, sourceY, sourceWidth, sourceHeight,
+                0, 0, currentWidth, currentHeight
+            )
             ctx.restore()
+
+            // 사진을 그린 후 십자가 선 다시 그리기 (사진 위에 표시)
+            if (frameCanvasRef.current && frame) {
+                setTimeout(() => {
+                    const frameCanvas = frameCanvasRef.current
+                    if (!frameCanvas) return
+                    
+                    const frameCtx = frameCanvas.getContext('2d')
+                    if (!frameCtx) return
+                    
+                    const frameRect = frameCanvas.getBoundingClientRect()
+                    const frameWidth = frameRect.width
+                    const frameHeight = frameRect.height
+                    
+                    if (frameWidth === 0 || frameHeight === 0) return
+                    
+                    const frameBorderWidth = frame.layout.frameWidth || 15
+                    const bottomHeight = frameHeight * 0.08
+                    const frameInnerX = frameBorderWidth
+                    const frameInnerY = frameBorderWidth
+                    const frameInnerWidth = frameWidth - (frameBorderWidth * 2)
+                    const frameInnerHeight = frameHeight - frameBorderWidth - bottomHeight
+                    
+                    // 십자가 선 다시 그리기
+                    frameCtx.strokeStyle = frame.layout.frameColor || '#808080'
+                    frameCtx.lineWidth = 10
+                    
+                    // 가로선 (중앙)
+                    const centerY = frameInnerY + (frameInnerHeight / 2)
+                    frameCtx.beginPath()
+                    frameCtx.moveTo(frameInnerX, centerY)
+                    frameCtx.lineTo(frameInnerX + frameInnerWidth, centerY)
+                    frameCtx.stroke()
+                    
+                    // 세로선 (중앙)
+                    const centerX = frameInnerX + (frameInnerWidth / 2)
+                    frameCtx.beginPath()
+                    frameCtx.moveTo(centerX, frameInnerY)
+                    frameCtx.lineTo(centerX, frameInnerY + frameInnerHeight)
+                    frameCtx.stroke()
+                }, 50)
+            }
         }
         
-        img.onerror = () => {
-            console.error('이미지 로드 실패:', photoSrc)
+        img.onerror = (error) => {
+            console.error('이미지 로드 실패:', photoSrc, error)
+            // 에러 발생 시 빈 캔버스로 표시
+            if (canvas) {
+                const ctx = canvas.getContext('2d')
+                if (ctx) {
+                    ctx.fillStyle = '#f0f0f0'
+                    ctx.fillRect(0, 0, canvas.width, canvas.height)
+                    ctx.fillStyle = '#999'
+                    ctx.font = '14px sans-serif'
+                    ctx.textAlign = 'center'
+                    ctx.fillText('이미지 로드 실패', canvas.width / 2, canvas.height / 2)
+                }
+            }
         }
         
-        img.src = photoSrc
-    }, [frame, photoTransforms])
+        // 이미지 소스 설정 (에러 핸들러 설정 후)
+        if (photoSrc) {
+            img.src = photoSrc
+        } else {
+            console.warn('사진 소스가 없습니다:', index)
+        }
+    }, [frame, photoTransforms, getMoveLimits, clampMove])
 
     useEffect(() => {
         if (!frame) return
@@ -270,31 +372,96 @@ function PhotoSelectScreen({
         }
     }, [frame, calculateSlotPositions, drawFrameBackground])
 
+
     useEffect(() => {
         if (!frame) return
         
-        // slotPositions가 계산될 때까지 대기
-        if (slotPositions.every(p => p === null)) {
-            return
-        }
-        
         // 프레임이 완전히 그려진 후 사진을 그리기 위해 약간의 딜레이
         const timer = setTimeout(() => {
-            // 각 슬롯에 사진 배치 (순차적으로)
+            // 프레임이 제대로 그려졌는지 확인
+            if (!frameCanvasRef.current) return
+            
+            const frameRect = frameCanvasRef.current.getBoundingClientRect()
+            if (frameRect.width === 0 || frameRect.height === 0) {
+                // 프레임이 아직 그려지지 않았으면 재시도
+                setTimeout(() => {
+                    selectedPhotos.forEach((photo, index) => {
+                        if (photo) {
+                            drawPhotoInSlot(index, photo)
+                        }
+                    })
+                }, 200)
+                return
+            }
+            
+            // 각 슬롯에 사진 배치
             selectedPhotos.forEach((photo, index) => {
-                if (photo && slotPositions[index]) {
+                if (photo) {
                     // 각 사진을 약간의 간격을 두고 그리기
                     setTimeout(() => {
                         drawPhotoInSlot(index, photo)
-                    }, index * 50)
+                    }, index * 100)
                 }
             })
-        }, 300) // 프레임 렌더링 후 충분한 시간 대기
+        }, 600) // 프레임 렌더링 후 충분한 시간 대기
         
         return () => {
             clearTimeout(timer)
         }
-    }, [selectedPhotos, photoTransforms, frame, slotPositions, drawPhotoInSlot])
+    }, [selectedPhotos, photoTransforms, frame, drawPhotoInSlot])
+
+    // 모든 사진이 로드된 후 십자가 선 다시 그리기
+    useEffect(() => {
+        if (!frame || !frameCanvasRef.current) return
+        
+        // 사진이 모두 선택되었는지 확인
+        const hasAllPhotos = selectedPhotos.every(photo => photo !== null)
+        if (!hasAllPhotos) return
+        
+        // 사진 로딩을 기다린 후 십자가 선 다시 그리기
+        const timer = setTimeout(() => {
+            const frameCanvas = frameCanvasRef.current
+            if (!frameCanvas) return
+            
+            const frameCtx = frameCanvas.getContext('2d')
+            if (!frameCtx) return
+            
+            const frameRect = frameCanvas.getBoundingClientRect()
+            const frameWidth = frameRect.width
+            const frameHeight = frameRect.height
+            
+            if (frameWidth === 0 || frameHeight === 0) return
+            
+            const frameBorderWidth = frame.layout.frameWidth || 15
+            const bottomHeight = frameHeight * 0.08
+            const frameInnerX = frameBorderWidth
+            const frameInnerY = frameBorderWidth
+            const frameInnerWidth = frameWidth - (frameBorderWidth * 2)
+            const frameInnerHeight = frameHeight - frameBorderWidth - bottomHeight
+            
+            // 십자가 선 다시 그리기
+            frameCtx.strokeStyle = frame.layout.frameColor || '#808080'
+            frameCtx.lineWidth = 10
+            
+            // 가로선 (중앙)
+            const centerY = frameInnerY + (frameInnerHeight / 2)
+            frameCtx.beginPath()
+            frameCtx.moveTo(frameInnerX, centerY)
+            frameCtx.lineTo(frameInnerX + frameInnerWidth, centerY)
+            frameCtx.stroke()
+            
+            // 세로선 (중앙)
+            const centerX = frameInnerX + (frameInnerWidth / 2)
+            frameCtx.beginPath()
+            frameCtx.moveTo(centerX, frameInnerY)
+            frameCtx.lineTo(centerX, frameInnerY + frameInnerHeight)
+            frameCtx.stroke()
+        }, 1000)
+        
+        return () => {
+            clearTimeout(timer)
+        }
+    }, [selectedPhotos, frame])
 
     const handleFileSelect = (index, event) => {
         const file = event.target.files[0]
