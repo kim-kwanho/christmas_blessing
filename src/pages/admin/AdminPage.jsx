@@ -1,24 +1,18 @@
 import { useState, useEffect } from 'react'
-import { loadPhotosFromDB, initDB } from '../../lib/database'
+import { getAllPhotosFromServer } from '../../lib/api'
 import './AdminPage.css'
 
 function AdminPage() {
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(true)
-  const [db, setDb] = useState(null)
   const [printQuantities, setPrintQuantities] = useState({}) // { photoId: quantity }
 
-  // IndexedDB 초기화 및 사진 목록 로드
+  // 사진 목록 로드
   const loadPhotos = async () => {
     try {
       setLoading(true)
       
-      if (!db) {
-        const database = await initDB()
-        setDb(database)
-      }
-
-      const loadedPhotos = await loadPhotosFromDB(db || await initDB())
+      const loadedPhotos = await getAllPhotosFromServer()
       setPhotos(loadedPhotos || [])
       
       // 프린트 수량 초기화
@@ -29,7 +23,7 @@ function AdminPage() {
       setPrintQuantities(quantities)
     } catch (error) {
       console.error('사진 목록 로드 실패:', error)
-      alert('사진 목록을 불러오는데 실패했습니다: ' + error.message)
+      // alert('사진 목록을 불러오는데 실패했습니다: ' + error.message)
     } finally {
       setLoading(false)
     }
@@ -81,23 +75,14 @@ function AdminPage() {
 
   // 사진 삭제
   const handleDelete = async (photo) => {
-    if (!confirm('이 인생네컷을 삭제하시겠습니까?')) {
+    if (!confirm('이 인생네컷을 삭제하시겠습니까? (서버에는 유지됨)')) {
       return
     }
 
     try {
-      if (!db) {
-        const database = await initDB()
-        setDb(database)
-      }
-
-      const database = db || await initDB()
-      const transaction = database.transaction(['photos'], 'readwrite')
-      const store = transaction.objectStore('photos')
-      await store.delete(photo.id)
-      
-      alert('✅ 삭제되었습니다.')
-      loadPhotos() // 목록 새로고침
+        // 현재 서버 삭제 API가 없으므로 클라이언트 상태에서만 제거
+        setPhotos(prev => prev.filter(p => p.id !== photo.id))
+        alert('✅ 목록에서 제거되었습니다.')
     } catch (error) {
       console.error('삭제 실패:', error)
       alert('삭제에 실패했습니다: ' + error.message)
@@ -149,13 +134,13 @@ function AdminPage() {
               <div key={photo.id} className="photo-card">
                 <div className="photo-image">
                   <img 
-                    src={photo.data} 
+                    src={photo.imageUrl ? (photo.imageUrl.startsWith('http') ? photo.imageUrl : `${import.meta.env.VITE_API_URL ? '' : 'http://localhost:3001'}${photo.imageUrl}`) : photo.data} 
                     alt="인생네컷"
                     loading="lazy"
                   />
                 </div>
                 <div className="photo-info">
-                  <h3 className="photo-name">인생네컷 #{photo.id}</h3>
+                  <h3 className="photo-name">#{photo.id.slice(0, 8)}...</h3>
                   <p className="photo-date">
                     {formatDate(photo.timestamp)}
                   </p>

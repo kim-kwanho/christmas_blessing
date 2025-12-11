@@ -4,7 +4,7 @@ import { getPhotoFromServer } from '../lib/api'
 import './ResultViewPage.css'
 
 function ResultViewPage() {
-    const { id } = useParams()
+    const { id: hash } = useParams() // URL의 :id 파라미터가 실제로는 hash값임
     const [photoData, setPhotoData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -14,28 +14,13 @@ function ResultViewPage() {
             try {
                 setLoading(true)
                 
-                // 서버에서 조회 시도
-                try {
-                    const result = await getPhotoFromServer(id)
-                    setPhotoData({
-                        id: result.id,
-                        data: result.data,
-                        timestamp: result.timestamp
-                    })
-                } catch (serverError) {
-                    // 서버 조회 실패 시 로컬 IndexedDB에서 조회 (백업)
-                    console.warn('서버 조회 실패, 로컬에서 조회 시도:', serverError)
-                    const { initDB, loadPhotosFromDB } = await import('../lib/database')
-                    const db = await initDB()
-                    const photos = await loadPhotosFromDB(db)
-                    const photo = photos.find(p => p.id === id)
-
-                    if (photo) {
-                        setPhotoData(photo)
-                    } else {
-                        setError('인생네컷을 찾을 수 없습니다.')
-                    }
-                }
+                // 서버에서 조회 시도 (해시 기반)
+                const result = await getPhotoFromServer(hash)
+                setPhotoData({
+                    id: result.id,
+                    data: result.data,
+                    timestamp: result.timestamp
+                })
             } catch (err) {
                 console.error('사진 로드 실패:', err)
                 setError('사진을 불러오는데 실패했습니다.')
@@ -44,10 +29,10 @@ function ResultViewPage() {
             }
         }
 
-        if (id) {
+        if (hash) {
             loadPhoto()
         }
-    }, [id])
+    }, [hash])
 
     const handleDownload = () => {
         if (!photoData) return

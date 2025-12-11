@@ -1,12 +1,13 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
-import QRCode from 'qrcode'
+import QRCodeStyling from 'qr-code-styling'
+import { savePhotoToServer } from '../lib/api'
 import './ResultScreen.css'
 
 function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPhoto }) {
     const canvasRef = useRef(null)
-    const [qrCodeUrl, setQrCodeUrl] = useState(null)
+    const qrRef = useRef(null)
     const [qrModalOpen, setQrModalOpen] = useState(false)
-    const [photoId, setPhotoId] = useState(null)
+    const [photoHash, setPhotoHash] = useState(null)
     const [isGeneratingQR, setIsGeneratingQR] = useState(false)
 
     const getMoveLimits = useCallback((img, slotWidth, slotHeight) => {
@@ -294,18 +295,19 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
         try {
             // 고유 ID 생성
             const uniqueId = `lifecut_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
-            setPhotoId(uniqueId)
 
             // 현재 결과물을 이미지로 변환
             const imageData = canvas.toDataURL('image/png')
 
             // 서버에 저장 (다른 기기에서도 접근 가능하도록)
-            const { savePhotoToServer } = await import('../lib/api')
-            await savePhotoToServer({
+            const result = await savePhotoToServer({
                 id: uniqueId,
                 imageData: imageData,
                 timestamp: new Date().toISOString()
             })
+
+            // 해시값 저장
+            setPhotoHash(result.hash)
 
             // 로컬 IndexedDB에도 저장 (백업)
             try {
@@ -321,22 +323,41 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                 console.warn('로컬 저장 실패 (무시):', localError)
             }
 
-            // QR 코드 URL 생성 (현재 도메인 + 고유 ID)
+            // QR 코드 URL 생성 (현재 도메인 + 해시값)
+            // 주의: 클라이언트는 /result/{hash} 형태로 접근
             const currentUrl = window.location.origin
-            const qrUrl = `${currentUrl}/result/${uniqueId}`
+            const qrUrl = `${currentUrl}/result/${result.hash}`
 
-            // QR 코드 생성
-            const qrDataUrl = await QRCode.toDataURL(qrUrl, {
-                width: 300,
-                margin: 2,
-                color: {
-                    dark: '#000000',
-                    light: '#FFFFFF'
-                }
-            })
-
-            setQrCodeUrl(qrDataUrl)
             setQrModalOpen(true)
+            
+            // 모달이 열린 후 QR 코드 생성 및 렌더링
+            setTimeout(() => {
+                if (qrRef.current) {
+                    qrRef.current.innerHTML = '' // 기존 QR 코드 제거
+                    
+                    const qrCode = new QRCodeStyling({
+                        width: 300,
+                        height: 300,
+                        type: "svg",
+                        data: qrUrl,
+                        image: "/favicon.svg", // 로고 이미지 (public 폴더에 있는 favicon 사용)
+                        dotsOptions: {
+                            color: "#000000",
+                            type: "rounded"
+                        },
+                        backgroundOptions: {
+                            color: "#ffffff",
+                        },
+                        imageOptions: {
+                            crossOrigin: "anonymous",
+                            margin: 10
+                        }
+                    })
+                    
+                    qrCode.append(qrRef.current)
+                }
+            }, 100)
+
         } catch (error) {
             console.error('QR 코드 생성 실패:', error)
             const errorMessage = error.message || '알 수 없는 오류가 발생했습니다.'
@@ -360,6 +381,7 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
             setIsGeneratingQR(false)
         }
     }
+
 
 
 
@@ -390,7 +412,7 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                 </div>
 
                 {/* QR 코드 모달 */}
-                {qrModalOpen && qrCodeUrl && (
+                {qrModalOpen && (
                     <div className="qr-modal-overlay" onClick={() => setQrModalOpen(false)}>
                         <div className="qr-modal-content" onClick={(e) => e.stopPropagation()}>
                             <button 
@@ -404,10 +426,10 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                                 이 QR 코드를 스캔하면<br />
                                 <strong>다른 기기에서도 결과물을 다운로드</strong>할 수 있습니다.
                             </p>
-                            <div className="qr-code-image">
-                                <img src={qrCodeUrl} alt="QR Code" />
+                            <div className="qr-code-image" ref={qrRef}>
+                                {/* QR 코드가 여기에 렌더링됩니다 */}
                             </div>
-                            <p className="qr-url">{window.location.origin}/result/{photoId}</p>
+                            <p className="qr-url">{window.location.origin}/result/{photoHash}</p>
                             <p style={{ marginTop: '15px', fontSize: '12px', color: '#666' }}>
                                 💡 같은 네트워크에 연결된 기기에서 접근 가능합니다
                             </p>
