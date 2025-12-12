@@ -17,7 +17,7 @@ export const frames = [
                 { x: 0.5, y: 0.5, width: 0.5, height: 0.5 }  // 우하
             ],
             frameColor: '#F5F5F0', // 클라우드 댄서 (PANTONE 11-4201) - 부드러운 화이트 뉴트럴
-            frameWidth: 15,
+            frameWidth: 18,
             slotColor: '#F5F5F0', // 클라우드 댄서 톤
             bottomText: 'Hope',
             title: '',
@@ -41,6 +41,23 @@ export const frames = [
             slotColor: '#FFFFFF', // 흰색 슬롯 배경
             bottomText: 'Merry Christmas',
             title: '🎄'
+        }
+    },
+    {
+        id: 3,
+        name: 'Pyeong-an',
+        layout: {
+            slots: [
+                { x: 0, y: 0, width: 0.5, height: 0.5 }, // 좌상
+                { x: 0.5, y: 0, width: 0.5, height: 0.5 }, // 우상
+                { x: 0, y: 0.5, width: 0.5, height: 0.5 }, // 좌하
+                { x: 0.5, y: 0.5, width: 0.5, height: 0.5 }  // 우하
+            ],
+            frameColor: '#764ba2', // 보라색
+            frameWidth: 18,
+            slotColor: '#F5F5F0',
+            bottomText: 'Pyeong-an',
+            textColor: '#FFFFFF'
         }
     },
 ];

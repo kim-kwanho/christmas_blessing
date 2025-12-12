@@ -43,14 +43,17 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
     }, [])
 
     const drawFrameBorder = useCallback((ctx, canvasWidth, canvasHeight) => {
-        // 외곽 프레임 테두리
+        // 외곽 프레임 테두리 (캔버스 크기에 비례하여 조정)
+        const frameBorderWidth = frame.layout.frameWidth || 15
+        const scaledFrameWidth = frameBorderWidth * (canvasWidth / 200) // 200px 기준으로 비율 조정
+        
         ctx.strokeStyle = frame.layout.frameColor || '#808080'
-        ctx.lineWidth = frame.layout.frameWidth || 15
+        ctx.lineWidth = scaledFrameWidth
         ctx.strokeRect(
-            frame.layout.frameWidth / 2,
-            frame.layout.frameWidth / 2,
-            canvasWidth - frame.layout.frameWidth,
-            canvasHeight - frame.layout.frameWidth
+            scaledFrameWidth / 2,
+            scaledFrameWidth / 2,
+            canvasWidth - scaledFrameWidth,
+            canvasHeight - scaledFrameWidth
         )
 
         // 하단 텍스트 영역
@@ -72,11 +75,11 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
         }
 
         // 십자가 선 그리기 (사진 위에 그려지도록 마지막에 그리기)
-        const frameBorderWidth = frame.layout.frameWidth || 15
-        const frameInnerX = frameBorderWidth
-        const frameInnerY = frameBorderWidth
-        const frameInnerWidth = canvasWidth - (frameBorderWidth * 2)
-        const frameInnerHeight = canvasHeight - frameBorderWidth - bottomHeight
+        // scaledFrameWidth는 이미 위에서 계산됨
+        const frameInnerX = scaledFrameWidth
+        const frameInnerY = scaledFrameWidth
+        const frameInnerWidth = canvasWidth - (scaledFrameWidth * 2)
+        const frameInnerHeight = canvasHeight - scaledFrameWidth - bottomHeight
         
         ctx.strokeStyle = frame.layout.frameColor || '#808080'
         // FrameSelectScreen과 동일한 비율로 선 굵기 조정 (10px * (canvasWidth/200))
@@ -208,11 +211,12 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
             img.onload = () => {
                 // 프레임 내부 영역 기준으로 슬롯 영역 계산
                 const frameBorderWidth = frame.layout.frameWidth || 15
+                const scaledFrameWidth = frameBorderWidth * (canvasWidth / 200) // 200px 기준으로 비율 조정
                 const bottomHeight = canvasHeight * 0.08
-                const frameInnerX = frameBorderWidth
-                const frameInnerY = frameBorderWidth
-                const frameInnerWidth = canvasWidth - (frameBorderWidth * 2)
-                const frameInnerHeight = canvasHeight - frameBorderWidth - bottomHeight
+                const frameInnerX = scaledFrameWidth
+                const frameInnerY = scaledFrameWidth
+                const frameInnerWidth = canvasWidth - (scaledFrameWidth * 2)
+                const frameInnerHeight = canvasHeight - scaledFrameWidth - bottomHeight
 
                 // 슬롯 영역 계산
                 const x = Math.floor(frameInnerX + (slot.x * frameInnerWidth))
