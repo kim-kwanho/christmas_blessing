@@ -32,6 +32,18 @@
     min-height: 400px;
 }
 
+/* 태블릿에서 사진과 버튼 사이 간격 줄이기 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .frame-preview-background {
+        margin-bottom: 15px;
+    }
+    
+    .photo-select-controls {
+        padding-top: 10px;
+        padding-bottom: 15px;
+    }
+}
+
 .frame-overlay {
     position: absolute;
     top: 0;
@@ -157,11 +169,12 @@
     .frame-preview-background {
         max-width: 500px;
         min-height: 350px;
+        margin-bottom: 15px;
     }
     
     .photo-select-controls {
         gap: 12px;
-        padding-top: 15px;
+        padding-top: 10px;
         padding-bottom: 15px;
     }
     
@@ -208,10 +221,17 @@
     .frame-preview-background {
         max-width: 500px;
         padding: 18px;
+        margin-bottom: 15px;
     }
     
     .photo-select-container h2 {
         font-size: 21px;
+        margin-bottom: 15px;
+    }
+    
+    .photo-select-controls {
+        padding-top: 10px;
+        padding-bottom: 15px;
     }
 }
 
