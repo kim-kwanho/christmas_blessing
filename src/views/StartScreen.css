@@ -123,6 +123,9 @@
     padding: 80px 20px 60px;
     text-align: center;
     z-index: 2;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* 텍스트 영역 배경 오버레이 - 제거됨 */

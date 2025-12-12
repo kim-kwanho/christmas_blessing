@@ -3,6 +3,10 @@
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
+    overflow-y: auto;
+    max-height: 100vh;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 .result-container h2 {

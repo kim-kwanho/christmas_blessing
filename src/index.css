@@ -10,7 +10,8 @@ html {
     background: url('/hope.png') center center / cover no-repeat fixed;
     background-color: #000000;
     height: 100%;
-    overflow: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -20,12 +21,39 @@ body {
     min-height: 100vh;
     height: 100%;
     overflow-x: hidden;
-    overflow-y: hidden;
+    overflow-y: auto;
     color: #333;
-    position: fixed;
+    position: relative;
     width: 100%;
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* 스크롤바 스타일링 - 자연스럽게 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Firefox 스크롤바 */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 
 #root {

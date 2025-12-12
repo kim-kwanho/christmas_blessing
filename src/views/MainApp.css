@@ -12,6 +12,10 @@
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 100vh;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 .screen.active {

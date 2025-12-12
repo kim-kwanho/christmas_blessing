@@ -9,9 +9,12 @@
     background-size: cover;
     background-attachment: fixed;
     padding: 5px;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     box-sizing: border-box;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 .camera-container {
@@ -24,13 +27,14 @@
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 10px);
-    max-height: calc(100vh - 10px);
     min-height: calc(100vh - 10px);
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     box-sizing: border-box;
     gap: 5px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* 모바일에서만 Grid 강제 적용 */
