@@ -88,12 +88,11 @@
 
     .camera-preview-wrapper {
         width: 100%;
-        flex: 1 1 auto;
+        flex: 0 1 auto;
         margin-bottom: 8px;
-        max-height: none;
-        min-height: 0;
+        aspect-ratio: 3 / 4; /* 인생네컷 비율 (3:4) */
+        max-width: 100%;
         flex-shrink: 1;
-        flex-grow: 1;
         overflow: hidden;
     }
 
@@ -209,7 +208,7 @@
     }
 
     .camera-preview-wrapper {
-        aspect-ratio: 2 / 3; /* 2:3 비율 (세로 3) */
+        aspect-ratio: 3 / 4; /* 인생네컷 비율 (3:4) */
         max-height: 700px;
         margin-bottom: 35px;
     }
@@ -284,7 +283,8 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     min-height: 0;
     flex: 1 1 auto;
-    /* 비율 제약 제거 - 가능한 한 크게 */
+    aspect-ratio: 3 / 4; /* 인생네컷 비율 (3:4) */
+    max-width: 100%;
 }
 
 /* 태블릿 이상에서도 비율 제약 없이 크게 */
