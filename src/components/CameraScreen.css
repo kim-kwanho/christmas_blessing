@@ -56,19 +56,19 @@
         max-height: 100vh;
         -webkit-overflow-scrolling: touch !important;
         touch-action: pan-y !important;
+        padding-bottom: 20px;
     }
 
     .camera-container {
         max-width: 100%;
-        padding: 10px 10px 30px 10px;
+        padding: 10px 10px 50px 10px;
         display: flex;
         flex-direction: column;
-        min-height: calc(100vh - 20px);
-        height: auto;
-        overflow-y: auto !important;
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        overflow-y: visible !important;
         overflow-x: hidden !important;
-        -webkit-overflow-scrolling: touch !important;
-        touch-action: pan-y !important;
     }
 
     .camera-header {
@@ -105,9 +105,10 @@
     .camera-controls {
         gap: 12px;
         margin-top: 5px;
+        margin-bottom: 20px;
         padding-top: 8px;
-        padding-bottom: 30px;
-        min-height: 100px;
+        padding-bottom: 40px;
+        min-height: 120px;
         max-height: none;
         flex-shrink: 0;
     }
