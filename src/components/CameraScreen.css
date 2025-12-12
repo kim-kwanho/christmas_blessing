@@ -15,6 +15,7 @@
     box-sizing: border-box;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 
 .camera-container {
@@ -35,6 +36,7 @@
     gap: 5px;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 
 /* 모바일에서만 Grid 강제 적용 */
@@ -48,20 +50,26 @@
 @media (min-width: 769px) and (max-width: 1024px) {
     .camera-screen {
         padding: 10px;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: 100vh;
+        max-height: 100vh;
     }
 
     .camera-container {
         max-width: 100%;
         padding: 10px;
-        display: grid;
-        grid-template-rows: auto 1fr auto;
-        height: calc(100vh - 20px);
-        max-height: calc(100vh - 20px);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 20px);
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
     }
 
     .camera-header {
         margin-bottom: 8px;
         max-height: 45px;
+        flex-shrink: 0;
     }
 
     .camera-header h2 {
@@ -79,6 +87,7 @@
         margin-bottom: 8px;
         max-height: none;
         min-height: 0;
+        flex-shrink: 1;
     }
 
     .countdown-number {
@@ -91,8 +100,10 @@
         gap: 12px;
         margin-top: 5px;
         padding-top: 8px;
+        padding-bottom: 8px;
         min-height: 80px;
-        max-height: 90px;
+        max-height: none;
+        flex-shrink: 0;
     }
 
     .btn-start-camera,
