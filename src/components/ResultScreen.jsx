@@ -323,10 +323,10 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                 console.warn('로컬 저장 실패 (무시):', localError)
             }
 
-            // QR 코드 URL 생성 (현재 도메인 + 해시값)
-            // 주의: 클라이언트는 /result/{hash} 형태로 접근
-            const currentUrl = window.location.origin
-            const qrUrl = `${currentUrl}/result/${result.hash}`
+            // QR 코드 URL 생성 (배포된 도메인 + 해시값)
+            // 로컬/배포 환경 상관없이 항상 배포된 주소로 연결하여 외부 접근 가능하게 함
+            const deployUrl = 'https://christmas-liard-eight.vercel.app'
+            const qrUrl = `${deployUrl}/result/${result.hash}`
 
             setQrModalOpen(true)
             
@@ -340,7 +340,7 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                         height: 300,
                         type: "svg",
                         data: qrUrl,
-                        image: "/favicon.svg", // 로고 이미지 (public 폴더에 있는 favicon 사용)
+                        // image: "/favicon.svg", // 로고 제거
                         dotsOptions: {
                             color: "#000000",
                             type: "rounded"
