@@ -87,10 +87,10 @@
 
     .camera-preview-wrapper {
         width: 100%;
-        flex: 0 1 auto;
+        flex: 1 1 auto;
         margin-bottom: 8px;
-        max-height: 60vh;
-        min-height: 300px;
+        max-height: none;
+        min-height: 400px;
         flex-shrink: 1;
         overflow: hidden;
     }
