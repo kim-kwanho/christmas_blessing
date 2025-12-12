@@ -40,8 +40,73 @@
     }
 }
 
+/* 태블릿 (iPad) 최적화 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .camera-screen {
+        padding: 10px;
+    }
+
+    .camera-container {
+        max-width: 100%;
+        padding: 10px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        height: calc(100vh - 20px);
+        max-height: calc(100vh - 20px);
+    }
+
+    .camera-header {
+        margin-bottom: 8px;
+        max-height: 45px;
+    }
+
+    .camera-header h2 {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+
+    .camera-subtitle {
+        font-size: 13px;
+    }
+
+    .camera-preview-wrapper {
+        width: 100%;
+        flex: 1 1 auto;
+        margin-bottom: 8px;
+        max-height: none;
+        min-height: 0;
+    }
+
+    .countdown-number {
+        font-size: 80px;
+        width: 120px;
+        height: 120px;
+    }
+
+    .camera-controls {
+        gap: 12px;
+        margin-top: 5px;
+        padding-top: 8px;
+        min-height: 80px;
+        max-height: 90px;
+    }
+
+    .btn-start-camera,
+    .btn-capture {
+        min-width: 200px;
+        font-size: 18px;
+        padding: 14px 35px;
+    }
+
+    .btn-secondary {
+        min-width: 180px;
+        font-size: 16px;
+        padding: 14px 30px;
+    }
+}
+
 /* PC 화면 최적화 */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
     .camera-screen {
         padding: 15px;
     }

@@ -241,16 +241,26 @@
     background: #764ba2;
 }
 
-/* 반응형 공통 스타일 - 태블릿 */
+/* 반응형 공통 스타일 - 태블릿 (iPad) */
 @media (max-width: 1024px) and (min-width: 769px) {
     .btn {
-        padding: 14px 28px;
-        font-size: 15px;
+        padding: 12px 24px;
+        font-size: 14px;
+        min-width: 150px;
     }
     
     .popup-content {
-        padding: 30px;
+        padding: 25px;
         max-width: 85%;
+    }
+}
+
+/* iPad 세로 모드 (높이 제한) */
+@media (max-width: 1024px) and (min-width: 769px) and (max-height: 1366px) {
+    .btn {
+        padding: 10px 20px;
+        font-size: 13px;
+        min-width: 140px;
     }
 }
 

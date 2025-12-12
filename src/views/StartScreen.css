@@ -215,25 +215,54 @@
     cursor: not-allowed;
 }
 
-/* 태블릿 (가로 모드) */
+/* 태블릿 (가로 모드) - iPad */
 @media (max-width: 1024px) and (min-width: 769px) {
     .start-screen-container {
-        padding: 70px 20px 50px;
+        padding: 50px 20px 30px;
+        min-height: calc(100vh - 80px);
+        max-height: 100vh;
+        overflow: hidden;
     }
     
     .start-title {
-        font-size: 42px;
-        margin-bottom: 18px;
+        font-size: 38px;
+        margin-bottom: 15px;
     }
     
     .start-subtitle {
-        font-size: 17px;
+        font-size: 16px;
+        margin-bottom: 15px;
     }
     
     .btn-start {
-        padding: 16px 55px;
-        font-size: 22px;
-        min-width: 190px;
+        padding: 14px 50px;
+        font-size: 20px;
+        min-width: 180px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+}
+
+/* iPad 세로 모드 */
+@media (max-width: 1024px) and (min-width: 769px) and (max-height: 1366px) {
+    .start-screen-container {
+        padding: 40px 20px 25px;
+    }
+    
+    .start-title {
+        font-size: 36px;
+        margin-bottom: 12px;
+    }
+    
+    .start-subtitle {
+        font-size: 15px;
+        margin-bottom: 12px;
+    }
+    
+    .btn-start {
+        padding: 12px 45px;
+        font-size: 18px;
+        min-width: 170px;
     }
 }
 

@@ -38,6 +38,30 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    padding-bottom: 20px;
+}
+
+/* iPad 최적화 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .result-container {
+        padding: 15px;
+        max-height: calc(100vh - 30px);
+        overflow-y: auto;
+    }
+    
+    .result-image canvas {
+        max-height: 50vh;
+    }
+    
+    .result-controls {
+        gap: 12px;
+        padding-bottom: 15px;
+    }
+    
+    .result-container h2 {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
 }
 
 
