@@ -63,8 +63,8 @@
         padding: 10px;
         display: flex;
         flex-direction: column;
-        min-height: calc(100vh - 20px);
-        height: auto;
+        height: calc(100vh - 20px);
+        max-height: calc(100vh - 20px);
         overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
@@ -90,9 +90,10 @@
         width: 100%;
         flex: 1 1 auto;
         margin-bottom: 8px;
-        max-height: 70vh;
-        min-height: 400px;
+        max-height: none;
+        min-height: 0;
         flex-shrink: 1;
+        flex-grow: 1;
         overflow: hidden;
     }
 
