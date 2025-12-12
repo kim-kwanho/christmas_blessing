@@ -54,6 +54,8 @@
         overflow-x: hidden !important;
         height: 100vh;
         max-height: 100vh;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
     }
 
     .camera-container {
@@ -61,9 +63,11 @@
         padding: 10px;
         display: flex;
         flex-direction: column;
-        min-height: calc(100vh - 20px);
-        overflow-y: auto !important;
+        min-height: auto;
+        height: auto;
+        overflow-y: visible !important;
         overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
     }
 
     .camera-header {
@@ -83,11 +87,12 @@
 
     .camera-preview-wrapper {
         width: 100%;
-        flex: 1 1 auto;
+        flex: 0 1 auto;
         margin-bottom: 8px;
-        max-height: none;
-        min-height: 0;
+        max-height: 60vh;
+        min-height: 300px;
         flex-shrink: 1;
+        overflow: hidden;
     }
 
     .countdown-number {
