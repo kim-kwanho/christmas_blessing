@@ -63,11 +63,12 @@
         padding: 10px;
         display: flex;
         flex-direction: column;
-        min-height: auto;
+        min-height: calc(100vh - 20px);
         height: auto;
-        overflow-y: visible !important;
+        overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
     }
 
     .camera-header {
@@ -89,7 +90,7 @@
         width: 100%;
         flex: 1 1 auto;
         margin-bottom: 8px;
-        max-height: none;
+        max-height: 70vh;
         min-height: 400px;
         flex-shrink: 1;
         overflow: hidden;
@@ -105,7 +106,7 @@
         gap: 12px;
         margin-top: 5px;
         padding-top: 8px;
-        padding-bottom: 8px;
+        padding-bottom: 20px;
         min-height: 80px;
         max-height: none;
         flex-shrink: 0;
