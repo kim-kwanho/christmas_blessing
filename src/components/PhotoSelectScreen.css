@@ -157,14 +157,17 @@
     padding-top: 20px;
     padding-bottom: 20px;
     flex-shrink: 0;
+    min-height: 150px;
 }
 
 /* iPad 최적화 */
 @media (min-width: 769px) and (max-width: 1024px) {
     .photo-select-container {
-        max-height: calc(100vh - 40px);
+        max-height: none !important;
+        height: auto !important;
+        min-height: 100vh;
         overflow-y: auto;
-        padding-bottom: 30px;
+        padding-bottom: 50px;
     }
     
     .frame-preview-background {
@@ -176,8 +179,9 @@
     .photo-select-controls {
         gap: 12px;
         padding-top: 10px;
-        padding-bottom: 40px;
-        margin-bottom: 20px;
+        padding-bottom: 50px;
+        margin-bottom: 30px;
+        flex-shrink: 0;
     }
     
     .photo-select-container h2 {
