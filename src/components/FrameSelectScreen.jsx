@@ -58,10 +58,14 @@ function FrameSelectScreen({ frames, onFrameSelect, selectedPhotos = [] }) {
             )
         }
 
+        // 하단 영역 배경
+        const bottomY = height * 0.92
+        ctx.fillStyle = frame.layout.frameColor || '#333'
+        ctx.fillRect(0, bottomY, width, bottomHeight)
+
         // 하단 텍스트
         if (frame.layout.bottomText) {
-            ctx.fillStyle = frame.layout.frameColor || '#333'
-            ctx.fillRect(0, height * 0.92, width, height * 0.08)
+            // 하단 텍스트
             ctx.fillStyle = frame.layout.textColor || '#ffffff'
             ctx.font = 'bold 12px sans-serif'
             ctx.textAlign = 'center'
@@ -77,11 +81,12 @@ function FrameSelectScreen({ frames, onFrameSelect, selectedPhotos = [] }) {
         const width = canvas.width
         const height = canvas.height
 
-        const slot = frame.layout.slots[slotIndex]
-        if (!slot) return
+            const slot = frame.layout.slots[slotIndex]
+            if (!slot) return
 
-        const frameBorderWidth = frame.layout.frameWidth || 15
-        const bottomHeight = height * 0.08
+            const frameBorderWidth = frame.layout.frameWidth || 15
+            const bottomHeightRatio = frame.layout.bottomHeight || 0.08
+            const bottomHeight = height * bottomHeightRatio
         const frameInnerX = frameBorderWidth
         const frameInnerY = frameBorderWidth
         const frameInnerWidth = width - (frameBorderWidth * 2)

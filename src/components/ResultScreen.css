@@ -223,33 +223,119 @@
     pointer-events: none;
 }
 
-/* 반응형 */
-@media (max-width: 600px) {
+/* 반응형 - 태블릿 */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .result-container {
+        max-width: 500px;
+        padding: 15px;
+    }
+    
+    .result-image canvas {
+        max-height: 55vh;
+    }
+    
+    .result-container h2 {
+        font-size: 22px;
+    }
+}
+
+/* 반응형 - 모바일 태블릿 */
+@media (max-width: 768px) and (min-width: 481px) {
+    .result-container {
+        max-width: 100%;
+        padding: 15px;
+    }
+    
     .result-image canvas {
         max-height: 50vh;
     }
     
+    .result-container h2 {
+        font-size: 20px;
+        margin-bottom: 25px;
+    }
+    
+    .result-controls {
+        gap: 12px;
+    }
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 480px) {
+    .result-image canvas {
+        max-height: 45vh;
+    }
+    
     .result-container {
         max-width: 100%;
-        padding: 0 15px;
+        padding: 10px 15px;
     }
     
     .result-image {
         padding: 10px;
+        margin-bottom: 20px;
     }
     
     .result-container h2 {
-        font-size: 20px;
+        font-size: 18px;
         margin-bottom: 20px;
+    }
+    
+    .result-controls {
+        gap: 10px;
     }
 
     .qr-modal-content {
-        padding: 20px;
+        padding: 20px 15px;
+        max-width: 90%;
+    }
+    
+    .qr-modal-content h3 {
+        font-size: 20px;
     }
 
     .qr-code-image img {
-        width: 250px;
-        height: 250px;
+        width: 220px;
+        height: 220px;
+    }
+    
+    .qr-url {
+        font-size: 11px;
+        padding: 8px;
+    }
+}
+
+/* 작은 모바일 */
+@media (max-width: 375px) {
+    .result-image canvas {
+        max-height: 40vh;
+    }
+    
+    .result-container h2 {
+        font-size: 16px;
+    }
+    
+    .qr-code-image img {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+/* 가로 모드 최적화 */
+@media (max-height: 600px) and (orientation: landscape) {
+    .result-image canvas {
+        max-height: 60vh;
+    }
+    
+    .result-container h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+    
+    .result-controls {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 }
 

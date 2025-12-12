@@ -19,3 +19,38 @@
     flex-direction: column;
 }
 
+/* 반응형 - 태블릿 */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .screen {
+        padding: 18px;
+    }
+}
+
+/* 반응형 - 모바일 태블릿 */
+@media (max-width: 768px) and (min-width: 481px) {
+    .screen {
+        padding: 15px;
+    }
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 480px) {
+    .screen {
+        padding: 10px;
+    }
+}
+
+/* 작은 모바일 */
+@media (max-width: 375px) {
+    .screen {
+        padding: 8px;
+    }
+}
+
+/* 가로 모드 최적화 */
+@media (max-height: 600px) and (orientation: landscape) {
+    .screen {
+        padding: 10px;
+    }
+}
+

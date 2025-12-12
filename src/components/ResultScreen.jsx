@@ -61,6 +61,7 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
 
         // 하단 텍스트
         if (frame.layout.bottomText) {
+            // 하단 텍스트
             ctx.fillStyle = frame.layout.textColor || '#ffffff'
             // FrameSelectScreen과 동일한 비율로 텍스트 크기 조정 (12px * (canvasWidth/200))
             const fontSize = Math.round(12 * (canvasWidth / 200))

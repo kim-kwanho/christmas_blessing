@@ -31,5 +31,50 @@ body {
 #root {
     width: 100%;
     min-height: 100vh;
+    min-height: 100dvh; /* 동적 뷰포트 높이 (모바일 주소창 고려) */
+}
+
+/* 반응형 전역 최적화 */
+/* 태블릿 */
+@media (max-width: 1024px) and (min-width: 769px) {
+    body {
+        font-size: 15px;
+    }
+}
+
+/* 모바일 태블릿 */
+@media (max-width: 768px) and (min-width: 481px) {
+    body {
+        font-size: 14px;
+    }
+}
+
+/* 모바일 */
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+    
+    html {
+        font-size: 14px;
+    }
+}
+
+/* 작은 모바일 */
+@media (max-width: 375px) {
+    body {
+        font-size: 13px;
+    }
+    
+    html {
+        font-size: 13px;
+    }
+}
+
+/* 가로 모드 최적화 */
+@media (max-height: 600px) and (orientation: landscape) {
+    body {
+        font-size: 13px;
+    }
 }
 

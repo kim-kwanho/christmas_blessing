@@ -174,11 +174,42 @@
     transform: scale(1.1);
 }
 
-/* 반응형 */
-@media (max-width: 600px) {
+/* 반응형 - 태블릿 */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .frame-preview-background {
+        max-width: 500px;
+        padding: 18px;
+    }
+    
+    .photo-select-container h2 {
+        font-size: 21px;
+    }
+}
+
+/* 반응형 - 모바일 태블릿 */
+@media (max-width: 768px) and (min-width: 481px) {
     .frame-preview-background {
         max-width: 100%;
         padding: 15px;
+        min-height: 350px;
+    }
+    
+    .photo-select-container h2 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .slot-number {
+        font-size: 40px;
+    }
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 480px) {
+    .frame-preview-background {
+        max-width: 100%;
+        padding: 12px;
+        min-height: 300px;
     }
     
     .photo-slot {
@@ -186,16 +217,64 @@
     }
     
     .slot-number {
-        font-size: 36px;
+        font-size: 32px;
     }
     
     .slot-text {
-        font-size: 14px;
+        font-size: 13px;
+    }
+    
+    .photo-select-container {
+        padding: 10px;
     }
     
     .photo-select-container h2 {
-        font-size: 20px;
-        margin-bottom: 20px;
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+    
+    .photo-select-controls {
+        gap: 12px;
+        padding-top: 15px;
+    }
+    
+    .slot-remove {
+        width: 25px;
+        height: 25px;
+        font-size: 16px;
+    }
+}
+
+/* 작은 모바일 */
+@media (max-width: 375px) {
+    .frame-preview-background {
+        padding: 10px;
+        min-height: 280px;
+    }
+    
+    .slot-number {
+        font-size: 28px;
+    }
+    
+    .slot-text {
+        font-size: 12px;
+    }
+    
+    .photo-select-container h2 {
+        font-size: 16px;
+    }
+}
+
+/* 가로 모드 최적화 */
+@media (max-height: 600px) and (orientation: landscape) {
+    .frame-preview-background {
+        max-width: 400px;
+        min-height: 250px;
+    }
+    
+    .photo-select-container h2 {
+        font-size: 18px;
+        margin-bottom: 10px;
     }
 }
 

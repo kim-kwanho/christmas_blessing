@@ -77,10 +77,14 @@ function PhotoSelectScreen({
             )
         }
 
+        // 하단 영역 배경
+        const bottomY = height * 0.92
+        ctx.fillStyle = frame.layout.frameColor || '#333'
+        ctx.fillRect(0, bottomY, width, bottomHeight)
+
         // 하단 텍스트
         if (frame.layout.bottomText) {
-            ctx.fillStyle = frame.layout.frameColor || '#333'
-            ctx.fillRect(0, height * 0.92, width, height * 0.08)
+            // 하단 텍스트
             ctx.fillStyle = frame.layout.textColor || '#ffffff'
             ctx.font = 'bold 20px sans-serif'
             ctx.textAlign = 'center'
