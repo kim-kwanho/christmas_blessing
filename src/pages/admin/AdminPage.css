@@ -1,7 +1,9 @@
 .admin-page {
   min-height: 100vh;
+  height: auto;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
+  overflow-y: auto;
 }
 
 .admin-header {
@@ -83,15 +85,16 @@
 
 .photos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  padding-bottom: 50px;
 }
 
 .photo-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -114,21 +117,23 @@
 }
 
 .photo-info {
-  padding: 15px;
+  padding: 10px;
 }
 
 .photo-name {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #333;
-  margin-bottom: 8px;
-  word-break: break-all;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .photo-date {
-  font-size: 12px;
+  font-size: 11px;
   color: #666;
-  margin-bottom: 5px;
+  margin-bottom: 0;
 }
 
 .photo-size {
@@ -137,32 +142,32 @@
 }
 
 .photo-actions {
-  padding: 15px;
+  padding: 10px;
   border-top: 1px solid #eee;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .print-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 
 .print-controls label {
-  font-size: 14px;
+  font-size: 12px;
   color: #333;
   font-weight: 500;
 }
 
 .quantity-input {
-  width: 60px;
-  padding: 6px 8px;
+  width: 50px;
+  padding: 4px;
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 12px;
   text-align: center;
 }
 
@@ -177,9 +182,9 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -195,9 +200,9 @@
   background: #ff4444;
   color: white;
   border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;

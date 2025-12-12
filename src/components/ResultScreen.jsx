@@ -9,6 +9,12 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
     const [qrModalOpen, setQrModalOpen] = useState(false)
     const [photoHash, setPhotoHash] = useState(null)
     const [isGeneratingQR, setIsGeneratingQR] = useState(false)
+    
+    // 자동 저장 상태 관리
+    const [isAutoSaved, setIsAutoSaved] = useState(false)
+    const [autoSaveHash, setAutoSaveHash] = useState(null)
+    const isSavedRef = useRef(false) // 중복 호출 방지용 ref
+    const saveTimeoutRef = useRef(null) // 저장 타이머 ref (중복 방지)
 
     const getMoveLimits = useCallback((img, slotWidth, slotHeight) => {
         const imgAspect = img.width / img.height
@@ -89,6 +95,65 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
         ctx.lineTo(centerX, frameInnerY + frameInnerHeight)
         ctx.stroke()
     }, [frame])
+
+    // 자동 저장 함수 (내부용)
+    const handleAutoSave = async () => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+
+        // 이미 저장 중이거나 저장 완료된 경우 중복 방지
+        if (isSavedRef.current) {
+            console.log('이미 저장되었거나 저장 중입니다. 중복 저장 방지.')
+            return
+        }
+
+        // 저장 시작 표시
+        isSavedRef.current = true
+
+        try {
+            console.log('자동 저장 시작...')
+            // 고유 ID 생성
+            const uniqueId = `lifecut_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
+
+            // 현재 결과물을 이미지로 변환
+            const imageData = canvas.toDataURL('image/png')
+
+            // 서버에 저장
+            const result = await savePhotoToServer({
+                id: uniqueId,
+                imageData: imageData,
+                timestamp: new Date().toISOString()
+            })
+
+            // 해시값 저장
+            setAutoSaveHash(result.hash)
+            setPhotoHash(result.hash)
+            setIsAutoSaved(true)
+
+            // 로컬 IndexedDB에도 저장 (백업)
+            try {
+                const { initDB, savePhotoToDB } = await import('../lib/database')
+                const db = await initDB()
+                const photoData = {
+                    id: uniqueId,
+                    data: imageData,
+                    timestamp: new Date().toISOString()
+                }
+                await savePhotoToDB(db, photoData)
+            } catch (localError) {
+                console.warn('로컬 저장 실패 (무시):', localError)
+            }
+
+            console.log('자동 저장 완료:', result.hash)
+            // onSave() // 부모 컴포넌트에 알림 (필요한 경우)
+
+        } catch (error) {
+            console.error('자동 저장 실패:', error)
+            // 저장 실패 시 다시 시도할 수 있도록 플래그 리셋
+            isSavedRef.current = false
+            // 자동 저장 실패는 사용자에게 알리지 않고 조용히 넘어감 (QR 생성 시 다시 시도하므로)
+        }
+    }
 
     const composeLifecut = useCallback(() => {
         const canvas = canvasRef.current
@@ -213,9 +278,21 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
 
                 loadedCount++
 
-                // 모든 사진이 로드되면 프레임 테두리 그리기
+                // 모든 사진이 로드되면 프레임 테두리 그리기 및 자동 저장 트리거
                 if (loadedCount === totalPhotos) {
                     drawFrameBorder(ctx, canvasWidth, canvasHeight)
+                    
+                    // 렌더링 완료 후 자동 저장 (중복 방지)
+                    // 저장이 아직 안 되었고, 타이머가 설정되지 않았을 때만 저장
+                    if (!isSavedRef.current && !saveTimeoutRef.current) {
+                        saveTimeoutRef.current = setTimeout(() => {
+                            // 타이머 실행 시점에 다시 한 번 체크 (다른 타이머가 실행했을 수 있음)
+                            if (!isSavedRef.current) {
+                                handleAutoSave()
+                            }
+                            saveTimeoutRef.current = null
+                        }, 500) // 0.5초 후 저장 (안전한 렌더링 보장)
+                    }
                 }
             }
 
@@ -232,7 +309,25 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
     }, [frame, selectedPhotos, photoTransforms, getMoveLimits, clampMove, drawFrameBorder])
 
     useEffect(() => {
+        // composeLifecut 호출 전에 저장 플래그 리셋 (새로운 렌더링 시작)
+        // 단, 이미 저장이 완료된 경우는 리셋하지 않음 (사용자가 새로 만들기를 누른 경우만)
+        // isSavedRef.current = false // 이건 주석 처리 - 한 번 저장되면 계속 유지
+        
+        // 기존 타이머 취소
+        if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current)
+            saveTimeoutRef.current = null
+        }
+        
         composeLifecut()
+        
+        // 컴포넌트 언마운트 시 타이머 정리
+        return () => {
+            if (saveTimeoutRef.current) {
+                clearTimeout(saveTimeoutRef.current)
+                saveTimeoutRef.current = null
+            }
+        }
     }, [composeLifecut])
 
     const handleDownload = () => {
@@ -285,101 +380,65 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
             })
     }
 
-    // QR 코드 생성
+    // QR 코드 생성 (이제 이미 저장된 해시 사용)
     const handleGenerateQR = async () => {
         const canvas = canvasRef.current
         if (!canvas) return
 
-        setIsGeneratingQR(true)
-
-        try {
-            // 고유 ID 생성
-            const uniqueId = `lifecut_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
-
-            // 현재 결과물을 이미지로 변환
-            const imageData = canvas.toDataURL('image/png')
-
-            // 서버에 저장 (다른 기기에서도 접근 가능하도록)
-            const result = await savePhotoToServer({
-                id: uniqueId,
-                imageData: imageData,
-                timestamp: new Date().toISOString()
-            })
-
-            // 해시값 저장
-            setPhotoHash(result.hash)
-
-            // 로컬 IndexedDB에도 저장 (백업)
+        // 자동 저장이 아직 안 끝났으면 잠시 대기
+        if (!autoSaveHash && !photoHash) {
+            setIsGeneratingQR(true)
+            // 2초 정도 대기해보고 없으면 수동 저장 시도
             try {
-                const { initDB, savePhotoToDB } = await import('../lib/database')
-                const db = await initDB()
-                const photoData = {
-                    id: uniqueId,
-                    data: imageData,
-                    timestamp: new Date().toISOString()
+                await new Promise(resolve => setTimeout(resolve, 2000))
+                if (!autoSaveHash && !photoHash) {
+                    await handleAutoSave() // 수동 저장 시도
                 }
-                await savePhotoToDB(db, photoData)
-            } catch (localError) {
-                console.warn('로컬 저장 실패 (무시):', localError)
+            } catch (e) {
+                console.error(e)
             }
-
-            // QR 코드 URL 생성 (배포된 도메인 + 해시값)
-            // 로컬/배포 환경 상관없이 항상 배포된 주소로 연결하여 외부 접근 가능하게 함
-            const deployUrl = 'https://christmas-liard-eight.vercel.app'
-            const qrUrl = `${deployUrl}/result/${result.hash}`
-
-            setQrModalOpen(true)
-            
-            // 모달이 열린 후 QR 코드 생성 및 렌더링
-            setTimeout(() => {
-                if (qrRef.current) {
-                    qrRef.current.innerHTML = '' // 기존 QR 코드 제거
-                    
-                    const qrCode = new QRCodeStyling({
-                        width: 300,
-                        height: 300,
-                        type: "svg",
-                        data: qrUrl,
-                        // image: "/favicon.svg", // 로고 제거
-                        dotsOptions: {
-                            color: "#000000",
-                            type: "rounded"
-                        },
-                        backgroundOptions: {
-                            color: "#ffffff",
-                        },
-                        imageOptions: {
-                            crossOrigin: "anonymous",
-                            margin: 10
-                        }
-                    })
-                    
-                    qrCode.append(qrRef.current)
-                }
-            }, 100)
-
-        } catch (error) {
-            console.error('QR 코드 생성 실패:', error)
-            const errorMessage = error.message || '알 수 없는 오류가 발생했습니다.'
-            
-            // 서버 연결 오류인 경우 더 명확한 안내
-            if (errorMessage.includes('서버에 연결할 수 없습니다') || 
-                errorMessage.includes('Failed to fetch') ||
-                errorMessage.includes('NetworkError')) {
-                alert(
-                    '⚠️ 서버 연결 실패\n\n' +
-                    'QR 코드 기능을 사용하려면 백엔드 서버가 실행되어 있어야 합니다.\n\n' +
-                    '다음 명령어로 서버를 실행해주세요:\n' +
-                    'npm run dev:server\n\n' +
-                    '또는 프론트엔드와 백엔드를 동시에 실행:\n' +
-                    'npm run dev:all'
-                )
-            } else {
-                alert(`QR 코드 생성에 실패했습니다.\n\n오류: ${errorMessage}`)
-            }
-        } finally {
             setIsGeneratingQR(false)
         }
+
+        const finalHash = autoSaveHash || photoHash
+        if (!finalHash) {
+            alert('아직 저장이 완료되지 않았습니다. 잠시 후 다시 시도해주세요.')
+            return
+        }
+
+        setQrModalOpen(true)
+        
+        // QR 코드 URL 생성 (배포된 도메인 + 해시값)
+        const deployUrl = 'https://christmas-liard-eight.vercel.app'
+        const qrUrl = `${deployUrl}/result/${finalHash}`
+        
+        // 모달이 열린 후 QR 코드 생성 및 렌더링
+        setTimeout(() => {
+            if (qrRef.current) {
+                qrRef.current.innerHTML = '' // 기존 QR 코드 제거
+                
+                const qrCode = new QRCodeStyling({
+                    width: 300,
+                    height: 300,
+                    type: "svg",
+                    data: qrUrl,
+                    // image: "/favicon.svg", // 로고 제거
+                    dotsOptions: {
+                        color: "#000000",
+                        type: "rounded"
+                    },
+                    backgroundOptions: {
+                        color: "#ffffff",
+                    },
+                    imageOptions: {
+                        crossOrigin: "anonymous",
+                        margin: 10
+                    }
+                })
+                
+                qrCode.append(qrRef.current)
+            }
+        }, 100)
     }
 
 
@@ -393,18 +452,16 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                     <canvas ref={canvasRef} id="resultCanvas" />
                 </div>
                 <div className="result-controls">
-                    <button className="btn btn-primary" onClick={onSave}>
-                        💾 저장하기
-                    </button>
+                    {/* 저장 버튼 제거 (자동 저장됨) */}
                     <button className="btn btn-secondary" onClick={handleDownload}>
                         📥 다운로드
                     </button>
                     <button 
                         className="btn btn-secondary" 
                         onClick={handleGenerateQR}
-                        disabled={isGeneratingQR}
+                        // disabled={isGeneratingQR}
                     >
-                        {isGeneratingQR ? '⏳ QR 생성 중...' : '📱 QR 생성'}
+                        {isGeneratingQR ? '⏳ 처리 중...' : '📱 QR 보기'}
                     </button>
                     <button className="btn btn-secondary" onClick={onNewPhoto}>
                         새로 만들기
@@ -429,9 +486,11 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                             <div className="qr-code-image" ref={qrRef}>
                                 {/* QR 코드가 여기에 렌더링됩니다 */}
                             </div>
-                            <p className="qr-url">{window.location.origin}/result/{photoHash}</p>
+                            <p className="qr-url">
+                                {`https://christmas-liard-eight.vercel.app/result/${photoHash || autoSaveHash}`}
+                            </p>
                             <p style={{ marginTop: '15px', fontSize: '12px', color: '#666' }}>
-                                💡 같은 네트워크에 연결된 기기에서 접근 가능합니다
+                                💡 LTE/5G 환경에서도 접근 가능합니다
                             </p>
                         </div>
                     </div>

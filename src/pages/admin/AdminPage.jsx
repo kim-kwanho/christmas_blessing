@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getAllPhotosFromServer } from '../../lib/api'
+import { getAllPhotosFromServer, deletePhotoFromServer, printPhoto } from '../../lib/api'
 import './AdminPage.css'
 
 function AdminPage() {
@@ -30,11 +30,18 @@ function AdminPage() {
   }
 
   useEffect(() => {
+    // 초기 로드만 실행
     loadPhotos()
     
-    // 5초마다 자동 새로고침
-    const interval = setInterval(loadPhotos, 5000)
-    return () => clearInterval(interval)
+    // Admin 페이지에서는 스크롤 가능하도록 body 스타일 변경
+    document.body.style.overflowY = 'auto'
+    document.documentElement.style.overflowY = 'auto'
+    
+    return () => {
+      // 다른 페이지로 이동할 때 원래대로 복구 (필요한 경우)
+      // document.body.style.overflowY = 'hidden'
+      // document.documentElement.style.overflowY = 'hidden'
+    }
   }, [])
 
   // 프린트 수량 변경
@@ -50,39 +57,55 @@ function AdminPage() {
   const handlePrint = async (photo) => {
     const quantity = printQuantities[photo.id] || 1
     
-    if (!confirm(`인생네컷을 ${quantity}장 프린트하시겠습니까?`)) {
+    if (!confirm(`인생네컷을 ${quantity}장 프린트하시겠습니까?\n\n프린터: Canon SELPHY CP1300`)) {
       return
     }
 
     try {
-      // TODO: 실제 프린터 API 호출
-      // 여기서는 시뮬레이션
+      // 이미지 URL (Supabase Public URL)
+      const imageUrl = photo.data || photo.imageUrl
+      
+      if (!imageUrl) {
+        alert('이미지 URL을 찾을 수 없습니다.')
+        return
+      }
+
       console.log('프린트 요청:', {
         photoId: photo.id,
-        imageData: photo.data,
+        imageUrl: imageUrl,
         quantity: quantity
       })
 
-      alert(`✅ 프린트 요청이 전송되었습니다!\n\n수량: ${quantity}장`)
+      // 프린트 API 호출
+      const result = await printPhoto(imageUrl, quantity)
       
-      // 실제 구현 시:
-      // await printImage(photo.data, quantity)
+      alert(`✅ 프린트 완료!\n\n수량: ${quantity}장\n\n프린터에서 출력을 확인해주세요.`)
+      
     } catch (error) {
       console.error('프린트 실패:', error)
-      alert('프린트에 실패했습니다: ' + error.message)
+      const errorMessage = error.message || '알 수 없는 오류가 발생했습니다.'
+      
+      if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('Failed to fetch')) {
+        alert('⚠️ 서버에 연결할 수 없습니다.\n\n백엔드 서버가 실행 중인지 확인해주세요.\n\n터미널에서 "npm run dev:server" 명령어로 서버를 실행해주세요.')
+      } else {
+        alert(`프린트에 실패했습니다.\n\n오류: ${errorMessage}\n\n프린터가 연결되어 있고 전원이 켜져 있는지 확인해주세요.`)
+      }
     }
   }
 
   // 사진 삭제
   const handleDelete = async (photo) => {
-    if (!confirm('이 인생네컷을 삭제하시겠습니까? (서버에는 유지됨)')) {
+    if (!confirm('이 인생네컷을 완전히 삭제하시겠습니까?\n\n삭제된 사진은 복구할 수 없습니다.')) {
       return
     }
 
     try {
-        // 현재 서버 삭제 API가 없으므로 클라이언트 상태에서만 제거
+        // Supabase Storage에서 실제로 삭제
+        await deletePhotoFromServer(photo.hash)
+        
+        // 클라이언트 상태에서도 제거
         setPhotos(prev => prev.filter(p => p.id !== photo.id))
-        alert('✅ 목록에서 제거되었습니다.')
+        alert('✅ 삭제되었습니다.')
     } catch (error) {
       console.error('삭제 실패:', error)
       alert('삭제에 실패했습니다: ' + error.message)
@@ -134,13 +157,13 @@ function AdminPage() {
               <div key={photo.id} className="photo-card">
                 <div className="photo-image">
                   <img 
-                    src={photo.imageUrl ? (photo.imageUrl.startsWith('http') ? photo.imageUrl : `${import.meta.env.VITE_API_URL ? '' : 'http://localhost:3001'}${photo.imageUrl}`) : photo.data} 
+                    src={photo.data} 
                     alt="인생네컷"
                     loading="lazy"
                   />
                 </div>
                 <div className="photo-info">
-                  <h3 className="photo-name">#{photo.id.slice(0, 8)}...</h3>
+                  <h3 className="photo-name">인생네컷 #{photo.id}</h3>
                   <p className="photo-date">
                     {formatDate(photo.timestamp)}
                   </p>

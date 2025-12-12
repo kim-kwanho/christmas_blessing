@@ -126,27 +126,124 @@ export async function getPhotoFromServer(hash) {
     }
 }
 
-// 관리자용 목록 조회
+// 모든 결과물 목록 조회 (관리자용) - Storage 스캔 방식
 export async function getAllPhotosFromServer() {
     try {
-        // 루트 폴더의 파일/폴더 목록 조회
+        // 1. Storage 'photos' 버킷의 루트 목록 조회 (폴더명 = hash)
         const { data: list, error } = await supabase.storage
             .from('photos')
             .list()
 
         if (error) throw error
 
-        // 각 폴더(해시)의 메타데이터 읽기
-        // 주의: 파일이 많은 경우 성능 이슈가 있을 수 있음 (실무에서는 DB 테이블 사용 권장)
+        // 2. 각 폴더(해시)에 대해 메타데이터와 이미지 URL 가져오기
+        // 중복 제거: Set을 사용하여 이미 처리한 해시는 건너뜀
+        const processedHashes = new Set()
+        
         const photosPromises = list
-            .filter(item => !item.metadata) // 폴더만 필터링 (메타데이터가 없는 항목이 폴더일 가능성 높음 - Supabase 구현에 따라 다름)
-            // Supabase Storage list는 폴더를 명확히 구분하지 않을 수 있음. 
-            // 여기서는 단순화를 위해 모든 항목에 대해 시도하거나, DB를 안 쓰는 한계가 있음.
-            // 대안: 그냥 빈 배열 반환 (관리자 페이지는 나중에 DB 연동 시 구현)
-            
-        return { success: true, photos: [] } 
+            .filter(item => !item.name.startsWith('.')) // 숨김 파일/폴더 제외
+            .filter(item => {
+                // 해시(폴더명) 중복 체크
+                if (processedHashes.has(item.name)) return false
+                processedHashes.add(item.name)
+                return true
+            })
+            .map(async (folder) => {
+                try {
+                    const hash = folder.name
+                    
+                    // 2-1. 메타데이터 다운로드
+                    const { data: metaData, error: metaError } = await supabase.storage
+                        .from('photos')
+                        .download(`${hash}/meta.json`)
+                    
+                    let metadata = {}
+                    if (!metaError) {
+                        const metaText = await metaData.text()
+                        metadata = JSON.parse(metaText)
+                    }
+
+                    // 2-2. 이미지 Public URL
+                    const { data: publicUrlData } = supabase.storage
+                        .from('photos')
+                        .getPublicUrl(`${hash}/photo.png`)
+
+                    return {
+                        id: metadata.id || hash,
+                        hash: hash,
+                        data: publicUrlData.publicUrl, 
+                        timestamp: metadata.timestamp || folder.created_at,
+                        createdAt: metadata.createdAt || folder.created_at
+                    }
+                } catch (e) {
+                    console.warn(`폴더 ${folder.name} 처리 실패:`, e)
+                    return null
+                }
+            })
+
+        const photos = (await Promise.all(photosPromises))
+            .filter(p => p !== null)
+            // 최신순 정렬
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+        return photos
     } catch (error) {
         console.error('목록 조회 실패:', error)
-        return { success: false, photos: [], error: error.message }
+        return []
+    }
+}
+
+// 프린트 요청
+export async function printPhoto(imageUrl, quantity = 1, printerName = null) {
+    try {
+        const response = await fetch('http://localhost:3001/api/print', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                imageUrl,
+                quantity,
+                printerName
+            })
+        })
+
+        if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error || '프린트에 실패했습니다.')
+        }
+
+        return await response.json()
+    } catch (error) {
+        console.error('프린트 요청 실패:', error)
+        throw error
+    }
+}
+
+// 결과물 삭제 (Supabase Storage에서 폴더 전체 삭제)
+export async function deletePhotoFromServer(hash) {
+    try {
+        // 1. 폴더 내 모든 파일 목록 조회
+        const { data: files, error: listError } = await supabase.storage
+            .from('photos')
+            .list(hash)
+
+        if (listError) throw listError
+
+        // 2. 폴더 내 모든 파일 삭제
+        if (files && files.length > 0) {
+            const filePaths = files.map(file => `${hash}/${file.name}`)
+            
+            const { error: deleteError } = await supabase.storage
+                .from('photos')
+                .remove(filePaths)
+
+            if (deleteError) throw deleteError
+        }
+
+        return { success: true, message: '삭제되었습니다.' }
+    } catch (error) {
+        console.error('Supabase 삭제 실패:', error)
+        throw new Error(`삭제 실패: ${error.message}`)
     }
 }
