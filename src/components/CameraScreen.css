@@ -63,8 +63,8 @@
         padding: 10px;
         display: flex;
         flex-direction: column;
-        height: calc(100vh - 20px);
-        max-height: calc(100vh - 20px);
+        min-height: calc(100vh - 20px);
+        height: auto;
         overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
@@ -88,11 +88,11 @@
 
     .camera-preview-wrapper {
         width: 100%;
-        flex: 0 1 auto;
+        flex: 0 0 auto;
         margin-bottom: 8px;
         aspect-ratio: 3 / 4; /* 인생네컷 비율 (3:4) */
         max-width: 100%;
-        flex-shrink: 1;
+        flex-shrink: 0;
         overflow: hidden;
     }
 
