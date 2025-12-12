@@ -27,6 +27,9 @@
 @media (max-width: 1024px) and (min-width: 769px) {
     .screen {
         padding: 18px;
+        max-height: none !important;
+        height: auto !important;
+        overflow-y: auto !important;
     }
 }
 
