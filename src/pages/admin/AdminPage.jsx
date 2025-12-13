@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 import { getAllPhotosFromServer, deletePhotoFromServer, printPhoto } from '../../lib/api'
 import './AdminPage.css'
 
+const ADMIN_PASSWORD = 'mediavuddks' // media + 평안(영어 자판)
+
 function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [password, setPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(true)
   const [printQuantities, setPrintQuantities] = useState({}) // { photoId: quantity }
@@ -29,10 +34,20 @@ function AdminPage() {
     }
   }
 
+  // 암호 확인
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault()
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true)
+      setPasswordError('')
+      loadPhotos()
+    } else {
+      setPasswordError('암호가 올바르지 않습니다.')
+      setPassword('')
+    }
+  }
+
   useEffect(() => {
-    // 초기 로드만 실행
-    loadPhotos()
-    
     // Admin 페이지에서는 스크롤 가능하도록 body 스타일 변경
     document.body.style.overflowY = 'auto'
     document.documentElement.style.overflowY = 'auto'
@@ -43,6 +58,7 @@ function AdminPage() {
       // document.documentElement.style.overflowY = 'hidden'
     }
   }, [])
+
 
   // 프린트 수량 변경
   const handleQuantityChange = (photoId, quantity) => {
@@ -126,6 +142,46 @@ function AdminPage() {
     } catch {
       return dateString || '날짜 정보 없음'
     }
+  }
+
+  // 암호 입력 화면
+  if (!isAuthenticated) {
+    return (
+      <div className="admin-page">
+        <div className="admin-header">
+          <h1>관리자 페이지</h1>
+          <p className="admin-description">
+            관리자 페이지에 접근하려면 암호를 입력하세요.
+          </p>
+        </div>
+        <div className="admin-content">
+          <div className="password-form">
+            <form onSubmit={handlePasswordSubmit}>
+              <div className="password-input-group">
+                <label htmlFor="password">암호:</label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    setPasswordError('')
+                  }}
+                  placeholder="암호를 입력하세요"
+                  autoFocus
+                />
+                {passwordError && (
+                  <p className="password-error">{passwordError}</p>
+                )}
+              </div>
+              <button type="submit" className="btn-submit">
+                확인
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

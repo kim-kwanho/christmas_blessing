@@ -47,6 +47,7 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
         const frameBorderWidth = frame.layout.frameWidth || 15
         const scaledFrameWidth = frameBorderWidth * (canvasWidth / 200) // 200px 기준으로 비율 조정
         
+        // 프레임 테두리 먼저 그리기
         ctx.strokeStyle = frame.layout.frameColor || '#808080'
         ctx.lineWidth = scaledFrameWidth
         ctx.strokeRect(
@@ -60,18 +61,114 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
         const bottomHeight = canvasHeight * 0.08
         const bottomY = canvasHeight - bottomHeight
         ctx.fillStyle = frame.layout.frameColor || '#808080'
-        ctx.fillRect(0, bottomY, canvasWidth, bottomHeight)
+        // 프레임 테두리 안쪽부터 하단 영역 채우기
+        ctx.fillRect(scaledFrameWidth, bottomY, canvasWidth - (scaledFrameWidth * 2), bottomHeight)
 
-        // 하단 텍스트
-        if (frame.layout.bottomText) {
+        // 하단 텍스트 또는 이미지
+        if (frame.layout.bottomImage) {
+            // 하단 이미지 (로고)
+            const logoImg = new Image()
+            logoImg.crossOrigin = 'anonymous'
+            logoImg.onload = () => {
+                // 이미지 비율 유지하면서 하단 영역에 맞춤
+                const imgAspect = logoImg.width / logoImg.height
+                const bottomAspect = canvasWidth / bottomHeight
+                
+                let drawWidth, drawHeight
+                if (imgAspect > bottomAspect) {
+                    // 이미지가 더 넓음 - 너비에 맞춤
+                    drawWidth = canvasWidth * 0.9 // 여백 5%씩
+                    drawHeight = drawWidth / imgAspect
+                } else {
+                    // 이미지가 더 높음 - 높이에 맞춤
+                    drawHeight = bottomHeight * 0.8 // 여백 10%씩
+                    drawWidth = drawHeight * imgAspect
+                }
+                
+                const drawX = (canvasWidth - drawWidth) / 2
+                const drawY = bottomY + (bottomHeight - drawHeight) / 2
+                
+                ctx.drawImage(logoImg, drawX, drawY, drawWidth, drawHeight)
+            }
+            logoImg.src = frame.layout.bottomImage
+        } else if (frame.layout.bottomText) {
             // 하단 텍스트
             ctx.fillStyle = frame.layout.textColor || '#ffffff'
-            // FrameSelectScreen과 동일한 비율로 텍스트 크기 조정 (12px * (canvasWidth/200))
-            const fontSize = Math.round(12 * (canvasWidth / 200))
-            ctx.font = `bold ${fontSize}px sans-serif`
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillText(frame.layout.bottomText, canvasWidth / 2, bottomY + bottomHeight / 2)
+            
+            // 1번 프레임 로고 스타일
+            if (frame.layout.logoStyle) {
+                const lines = frame.layout.bottomText.split('\n')
+                const centerX = canvasWidth / 2
+                // 텍스트를 아래로 내려서 다 보이게
+                const centerY = bottomY + bottomHeight * 0.55
+                
+                // "Hope" 텍스트 (큰 크기)
+                const hopeFontSize = Math.round(10 * (canvasWidth / 200))
+                const fontFamily = frame.layout.fontFamily || 'Inter, sans-serif'
+                ctx.font = `bold ${hopeFontSize}px ${fontFamily}`
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'middle'
+                
+                // "Hope" 텍스트 크기 측정
+                const hopeMetrics = ctx.measureText(lines[0])
+                const hopeWidth = hopeMetrics.width
+                const hopeHeight = hopeFontSize
+                
+                // 타원형 테두리 그리기
+                ctx.strokeStyle = ctx.fillStyle
+                ctx.lineWidth = Math.max(1, Math.round(2 * (canvasWidth / 200)))
+                const ellipseWidth = hopeWidth * 1.3
+                const ellipseHeight = hopeHeight * 1.8
+                ctx.beginPath()
+                ctx.ellipse(centerX, centerY, ellipseWidth / 2, ellipseHeight / 2, 0, 0, 2 * Math.PI)
+                ctx.stroke()
+                
+                // 별 모양 장식 (왼쪽 상단, 오른쪽 하단)
+                const starSize = Math.max(3, Math.round(4 * (canvasWidth / 200)))
+                const drawStar = (x, y, size) => {
+                    ctx.beginPath()
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2
+                        const px = x + size * Math.cos(angle)
+                        const py = y + size * Math.sin(angle)
+                        if (i === 0) ctx.moveTo(px, py)
+                        else ctx.lineTo(px, py)
+                    }
+                    ctx.closePath()
+                    ctx.fill()
+                }
+                drawStar(centerX - ellipseWidth / 2 - starSize * 2, centerY - hopeHeight * 0.4, starSize)
+                drawStar(centerX + ellipseWidth / 2 + starSize * 2, centerY + hopeHeight * 0.4, starSize)
+                
+                // "Hope" 텍스트 그리기
+                ctx.fillText(lines[0], centerX, centerY)
+                
+                // "Builders" 텍스트 (작은 크기)
+                if (lines[1]) {
+                    const buildersFontSize = Math.round(6 * (canvasWidth / 200))
+                    ctx.font = `bold ${buildersFontSize}px ${fontFamily}`
+                    ctx.fillText(lines[1], centerX, centerY + hopeHeight * 0.3)
+                }
+            } else {
+                // 일반 텍스트 렌더링
+                // 3번 프레임은 세리프 폰트 사용 (크기 조정)
+                const baseFontSize = frame.layout.fontFamily ? 9 : 12
+                const fontSize = Math.round(baseFontSize * (canvasWidth / 200))
+                const fontFamily = frame.layout.fontFamily || 'Inter, "Noto Sans KR", sans-serif'
+                ctx.font = `bold ${fontSize}px ${fontFamily}`
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'middle'
+                
+                // 여러 줄 텍스트 지원
+                const lines = frame.layout.bottomText.split('\n')
+                const lineHeight = fontSize * 1.3
+                const totalHeight = lines.length * lineHeight
+                const startY = bottomY + (bottomHeight - totalHeight) / 2 + lineHeight / 2
+                
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, canvasWidth / 2, startY + index * lineHeight)
+                })
+            }
         }
 
         // 십자가 선 그리기 (사진 위에 그려지도록 마지막에 그리기)
@@ -218,15 +315,63 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                 const frameInnerWidth = canvasWidth - (scaledFrameWidth * 2)
                 const frameInnerHeight = canvasHeight - scaledFrameWidth - bottomHeight
 
-                // 슬롯 영역 계산
-                const x = Math.floor(frameInnerX + (slot.x * frameInnerWidth))
-                const y = Math.floor(frameInnerY + (slot.y * frameInnerHeight))
-                const width = Math.floor(slot.width * frameInnerWidth)
-                const height = Math.floor(slot.height * frameInnerHeight)
+                // 슬롯 영역 계산 (네컷처럼 프레임 내부 영역을 완전히 채우도록)
+                let x = frameInnerX + (slot.x * frameInnerWidth)
+                let y = frameInnerY + (slot.y * frameInnerHeight)
+                let width = slot.width * frameInnerWidth
+                let height = slot.height * frameInnerHeight
+                
+                // 하단 슬롯(3, 4번째)의 경우 높이를 정확히 계산하여 frameInnerHeight까지 완전히 채우기
+                if (slot.y + slot.height >= 1.0) {
+                    const frameBottom = frameInnerY + frameInnerHeight
+                    height = frameBottom - y
+                }
+                
+                // 우측 슬롯(2, 4번째)의 경우 너비를 정확히 계산하여 frameInnerWidth까지 완전히 채우기
+                if (slot.x + slot.width >= 1.0) {
+                    const frameRight = frameInnerX + frameInnerWidth
+                    width = frameRight - x
+                }
+                
+                // 첫 번째 슬롯(좌상)이 정확히 frameInnerX, frameInnerY에서 시작하도록
+                if (slot.x === 0 && slot.y === 0) {
+                    x = frameInnerX
+                    y = frameInnerY
+                }
+                
+                // 정수로 변환 (반올림 오차 최소화)
+                x = Math.floor(x)
+                y = Math.floor(y)
+                width = Math.ceil(width)
+                height = Math.ceil(height)
+                
+                // 마지막 슬롯이 프레임 경계까지 정확히 채우도록 (하단 슬롯이 잘리지 않도록)
+                if (slot.x + slot.width >= 1.0) {
+                    width = (frameInnerX + frameInnerWidth) - x
+                }
+                if (slot.y + slot.height >= 1.0) {
+                    const frameBottom = frameInnerY + frameInnerHeight
+                    height = frameBottom - y
+                    // 높이가 음수가 되지 않도록 보장
+                    if (height < 0) height = 0
+                }
+                
+                // 슬롯이 프레임 경계를 넘지 않도록 보장
+                if (x + width > frameInnerX + frameInnerWidth) {
+                    width = (frameInnerX + frameInnerWidth) - x
+                }
+                if (y + height > frameInnerY + frameInnerHeight) {
+                    height = (frameInnerY + frameInnerHeight) - y
+                }
 
-                // 클리핑 영역 설정 (십자가 선이 그려질 수 있도록 주의)
+                // 슬롯 배경색 그리기 (흰색 여백 방지)
+                ctx.fillStyle = frame.layout.slotColor || '#ffffff'
+                ctx.fillRect(x, y, width, height)
+
+                // 클리핑 영역 설정 (십자가 선이 그려질 수 있도록 주의, 하단 슬롯이 잘리지 않도록)
                 ctx.save()
                 ctx.beginPath()
+                // 클리핑 영역을 약간 크게 설정하여 사진이 잘리지 않도록
                 ctx.rect(x, y, width, height)
                 ctx.clip()
 
@@ -270,11 +415,18 @@ function ResultScreen({ frame, selectedPhotos, photoTransforms, onSave, onNewPho
                     sourceY = Math.max(0, Math.min(img.height - sourceHeight, sourceY))
                 }
 
-                // 사진 그리기
+                // 사진 그리기 (슬롯을 완전히 채우도록, 하단 슬롯이 잘리지 않도록)
+                const isBottomSlot = slot.y + slot.height >= 1.0
+                const drawWidth = width + 2
+                // 하단 슬롯의 경우 높이를 더 크게 그려서 슬롯을 완전히 채우기
+                const drawHeight = isBottomSlot ? height + 3 : height + 2
+                // 하단 슬롯의 경우 y 위치를 약간 위로 조정하여 슬롯을 완전히 채우기
+                const drawX = isBottomSlot ? x - 1 : x - 1
+                const drawY = isBottomSlot ? y - 1 : y - 1
                 ctx.drawImage(
                     img,
                     sourceX, sourceY, sourceWidth, sourceHeight,
-                    x, y, width, height
+                    drawX, drawY, drawWidth, drawHeight
                 )
 
                 ctx.restore()

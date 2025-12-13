@@ -16,12 +16,14 @@ export const frames = [
                 { x: 0, y: 0.5, width: 0.5, height: 0.5 }, // 좌하
                 { x: 0.5, y: 0.5, width: 0.5, height: 0.5 }  // 우하
             ],
-            frameColor: '#F5F5F0', // 클라우드 댄서 (PANTONE 11-4201) - 부드러운 화이트 뉴트럴
+            frameColor: '#001F3F', // 어두운 남색 (네이비 블루)
             frameWidth: 18,
             slotColor: '#F5F5F0', // 클라우드 댄서 톤
-            bottomText: 'Hope',
+            bottomText: 'Hope', // 한 줄 텍스트
             title: '',
-            textColor: '#8B8B83' // 클라우드 댄서와 어울리는 부드러운 그레이 톤
+            textColor: '#FFFFFF', // 흰색
+            fontFamily: 'Inter, sans-serif', // 둥글고 부드러운 sans-serif
+            logoStyle: true // 로고 스타일 적용 (타원형 테두리, 별 장식)
         }
     },
     {
@@ -36,11 +38,13 @@ export const frames = [
                 { x: 0, y: 0.5, width: 0.5, height: 0.5 }, // 좌하
                 { x: 0.5, y: 0.5, width: 0.5, height: 0.5 }  // 우하
             ],
-            frameColor: '#DC143C', // 크리스마스 빨간색
+            frameColor: '#B22222', // 진한 크리스마스 빨간색
             frameWidth: 20,
             slotColor: '#FFFFFF', // 흰색 슬롯 배경
-            bottomText: 'Merry Christmas',
-            title: '🎄'
+            bottomText: 'MERRY\nCHRISTMAS', // 두 줄로 나누기
+            title: '🎄',
+            textColor: '#FFD700', // 황금색 (크리스마스 전통 색상)
+            fontFamily: 'Playfair Display, serif' // 세리프 폰트
         }
     },
     {
@@ -53,11 +57,12 @@ export const frames = [
                 { x: 0, y: 0.5, width: 0.5, height: 0.5 }, // 좌하
                 { x: 0.5, y: 0.5, width: 0.5, height: 0.5 }  // 우하
             ],
-            frameColor: '#764ba2', // 보라색
+            frameColor: '#6B46C1', // 고급스러운 인디고 보라색
             frameWidth: 18,
             slotColor: '#F5F5F0',
-            bottomText: 'Pyeong-an',
-            textColor: '#FFFFFF'
+            bottomText: 'PEACE ATTIC', // 한 줄 텍스트
+            textColor: '#FFD700', // 황금색
+            fontFamily: 'Playfair Display, serif' // 세리프 폰트
         }
     },
 ];
