@@ -288,10 +288,10 @@ function CameraScreen({ onCaptureComplete }) {
         return canvas.toDataURL('image/jpeg', 0.9)
     }
 
-    // 단일 촬영 함수 (7초 타이머 포함)
+    // 단일 촬영 함수 (6초 타이머 포함)
     const captureSinglePhoto = (photoIndex) => {
         return new Promise((resolve) => {
-            setCountdown(7)
+            setCountdown(6)
             
             const countdownInterval = setInterval(() => {
                 setCountdown((prev) => {
