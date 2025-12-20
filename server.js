@@ -295,10 +295,13 @@ app.get('/api/admin/photos', (req, res) => {
 })
 
 // 모든 라우트를 index.html로 리다이렉트 (SPA 라우팅 지원)
-app.get('*', (req, res) => {
-    // API 경로가 아닌 경우에만 index.html 제공
-    if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+// Express 5 호환: 와일드카드 라우트는 app.use()로 처리
+app.use((req, res, next) => {
+    // API 경로나 정적 파일 경로가 아닌 경우에만 index.html 제공
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads') && !req.path.startsWith('/dist')) {
         res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+    } else {
+        next()
     }
 })
 

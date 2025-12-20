@@ -2,15 +2,11 @@ import { useState, useEffect } from 'react'
 import { getAllPhotosFromServer, deletePhotoFromServer, printPhoto } from '../../lib/api'
 import './AdminPage.css'
 
-const ADMIN_PASSWORD = 'mediavuddks' // media + 평안(영어 자판)
-
 function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [passwordError, setPasswordError] = useState('')
   const [photos, setPhotos] = useState([])
   const [loading, setLoading] = useState(true)
   const [printQuantities, setPrintQuantities] = useState({}) // { photoId: quantity }
+  const [errorModal, setErrorModal] = useState({ show: false, message: '' })
 
   // 사진 목록 로드
   const loadPhotos = async () => {
@@ -34,23 +30,13 @@ function AdminPage() {
     }
   }
 
-  // 암호 확인
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault()
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true)
-      setPasswordError('')
-      loadPhotos()
-    } else {
-      setPasswordError('암호가 올바르지 않습니다.')
-      setPassword('')
-    }
-  }
-
   useEffect(() => {
     // Admin 페이지에서는 스크롤 가능하도록 body 스타일 변경
     document.body.style.overflowY = 'auto'
     document.documentElement.style.overflowY = 'auto'
+    
+    // 컴포넌트 마운트 시 사진 목록 로드
+    loadPhotos()
     
     return () => {
       // 다른 페이지로 이동할 때 원래대로 복구 (필요한 경우)
@@ -102,9 +88,19 @@ function AdminPage() {
       const errorMessage = error.message || '알 수 없는 오류가 발생했습니다.'
       
       if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('Failed to fetch')) {
-        alert('⚠️ 서버에 연결할 수 없습니다.\n\n백엔드 서버가 실행 중인지 확인해주세요.\n\n터미널에서 "npm run dev:server" 명령어로 서버를 실행해주세요.')
+        setErrorModal({
+          show: true,
+          message: '서버에 연결할 수 없습니다.',
+          details: '백엔드 서버가 실행 중인지 확인해주세요.',
+          instruction: '터미널에서 "npm run dev:server" 명령어로 서버를 실행해주세요.'
+        })
       } else {
-        alert(`프린트에 실패했습니다.\n\n오류: ${errorMessage}\n\n프린터가 연결되어 있고 전원이 켜져 있는지 확인해주세요.`)
+        setErrorModal({
+          show: true,
+          message: '프린트에 실패했습니다.',
+          details: `오류: ${errorMessage}`,
+          instruction: '프린터가 연결되어 있고 전원이 켜져 있는지 확인해주세요.'
+        })
       }
     }
   }
@@ -144,46 +140,7 @@ function AdminPage() {
     }
   }
 
-  // 암호 입력 화면
-  if (!isAuthenticated) {
-    return (
-      <div className="admin-page">
-        <div className="admin-header">
-          <h1>관리자 페이지</h1>
-          <p className="admin-description">
-            관리자 페이지에 접근하려면 암호를 입력하세요.
-          </p>
-        </div>
-        <div className="admin-content">
-          <div className="password-form">
-            <form onSubmit={handlePasswordSubmit}>
-              <div className="password-input-group">
-                <label htmlFor="password">암호:</label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value)
-                    setPasswordError('')
-                  }}
-                  placeholder="암호를 입력하세요"
-                  autoFocus
-                />
-                {passwordError && (
-                  <p className="password-error">{passwordError}</p>
-                )}
-              </div>
-              <button type="submit" className="btn-submit">
-                확인
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
+  
   return (
     <div className="admin-page">
       <div className="admin-header">
@@ -254,6 +211,34 @@ function AdminPage() {
           </div>
         )}
       </div>
+
+      {/* 에러 모달 */}
+      {errorModal.show && (
+        <div className="error-modal-overlay" onClick={() => setErrorModal({ show: false, message: '' })}>
+          <div className="error-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="error-modal-header">
+              <div className="error-icon-wrapper">
+                <span className="error-icon">⚠️</span>
+              </div>
+              <h3 className="error-modal-title">{errorModal.message}</h3>
+            </div>
+            <div className="error-modal-content">
+              <p className="error-modal-details">{errorModal.details}</p>
+              {errorModal.instruction && (
+                <p className="error-modal-instruction">{errorModal.instruction}</p>
+              )}
+            </div>
+            <div className="error-modal-footer">
+              <button 
+                className="error-modal-button"
+                onClick={() => setErrorModal({ show: false, message: '' })}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

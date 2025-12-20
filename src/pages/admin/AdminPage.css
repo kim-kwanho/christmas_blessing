@@ -430,3 +430,153 @@
     gap: 10px;
   }
 }
+
+/* 에러 모달 스타일 */
+.error-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.error-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-modal-header {
+  padding: 24px 24px 16px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+.error-icon-wrapper {
+  margin-bottom: 12px;
+}
+
+.error-icon {
+  font-size: 48px;
+  display: inline-block;
+}
+
+.error-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.error-modal-content {
+  padding: 20px 24px;
+  text-align: center;
+}
+
+.error-modal-details {
+  font-size: 15px;
+  color: #666;
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+
+.error-modal-instruction {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
+  line-height: 1.6;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid #ff9800;
+}
+
+.error-modal-footer {
+  padding: 16px 24px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.error-modal-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 120px;
+}
+
+.error-modal-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.error-modal-button:active {
+  transform: translateY(0);
+}
+
+/* 모바일 반응형 - 에러 모달 */
+@media (max-width: 480px) {
+  .error-modal {
+    max-width: 90%;
+  }
+
+  .error-modal-header {
+    padding: 20px 20px 12px;
+  }
+
+  .error-icon {
+    font-size: 40px;
+  }
+
+  .error-modal-title {
+    font-size: 18px;
+  }
+
+  .error-modal-content {
+    padding: 16px 20px;
+  }
+
+  .error-modal-details {
+    font-size: 14px;
+  }
+
+  .error-modal-instruction {
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .error-modal-footer {
+    padding: 12px 20px 20px;
+  }
+
+  .error-modal-button {
+    padding: 10px 24px;
+    font-size: 15px;
+  }
+}
