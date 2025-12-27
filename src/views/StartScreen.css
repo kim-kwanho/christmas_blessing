@@ -120,6 +120,7 @@
     align-items: center;
     justify-content: space-between;
     min-height: 100vh;
+    min-height: 100dvh; /* 동적 뷰포트 높이 */
     padding: 80px 20px 60px;
     text-align: center;
     z-index: 2;
@@ -180,9 +181,10 @@
     text-transform: uppercase;
     min-width: 200px;
     position: relative;
-    z-index: 1;
+    z-index: 10;
     margin-top: auto;
     margin-bottom: 0;
+    flex-shrink: 0; /* 버튼이 축소되지 않도록 */
     /* 모바일 드래그 방지 */
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
@@ -222,8 +224,10 @@
 @media (max-width: 1024px) and (min-width: 769px) {
     .start-screen-container {
         padding: 50px 20px 30px;
-        min-height: calc(100vh - 80px);
+        min-height: 100vh;
+        min-height: 100dvh;
         max-height: 100vh;
+        max-height: 100dvh;
         overflow: hidden;
     }
     
@@ -241,8 +245,9 @@
         padding: 14px 50px;
         font-size: 20px;
         min-width: 180px;
-        margin-top: 20px;
+        margin-top: auto;
         margin-bottom: 20px;
+        flex-shrink: 0;
     }
 }
 
@@ -250,6 +255,8 @@
 @media (max-width: 1024px) and (min-width: 769px) and (max-height: 1366px) {
     .start-screen-container {
         padding: 40px 20px 25px;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
     
     .start-title {
@@ -266,6 +273,8 @@
         padding: 12px 45px;
         font-size: 18px;
         min-width: 170px;
+        margin-top: auto;
+        flex-shrink: 0;
     }
 }
 
@@ -274,6 +283,8 @@
     .start-screen-container {
         padding: 60px 15px 50px;
         justify-content: space-between;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
     
     .start-title {
@@ -291,6 +302,7 @@
         font-size: 20px;
         min-width: 180px;
         margin-top: auto;
+        flex-shrink: 0;
     }
 }
 
@@ -299,6 +311,8 @@
     .start-screen-container {
         padding: 50px 10px 40px;
         justify-content: space-between;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
     
     .start-title {
@@ -318,7 +332,9 @@
         font-size: 18px;
         min-width: 160px;
         margin-top: auto;
+        margin-bottom: 0;
         letter-spacing: 1.5px;
+        flex-shrink: 0;
     }
 }
 
@@ -326,6 +342,8 @@
 @media (max-width: 375px) {
     .start-screen-container {
         padding: 40px 8px 35px;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
     
     .start-title {
@@ -344,6 +362,8 @@
         font-size: 16px;
         min-width: 140px;
         letter-spacing: 1px;
+        margin-top: auto;
+        flex-shrink: 0;
     }
 }
 
@@ -351,6 +371,8 @@
 @media (min-width: 1440px) {
     .start-screen-container {
         padding: 100px 20px 80px;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
     
     .start-title {
@@ -366,6 +388,8 @@
         padding: 20px 70px;
         font-size: 26px;
         min-width: 220px;
+        margin-top: auto;
+        flex-shrink: 0;
     }
 }
 
@@ -373,6 +397,8 @@
 @media (min-width: 1920px) {
     .start-screen-container {
         padding: 120px 20px 100px;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
     
     .start-title {
@@ -388,6 +414,8 @@
         padding: 22px 80px;
         font-size: 28px;
         min-width: 240px;
+        margin-top: auto;
+        flex-shrink: 0;
     }
 }
 
@@ -397,22 +425,27 @@
         padding: 30px 20px 30px;
         justify-content: center;
         gap: 20px;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
     
     .start-title {
         font-size: 32px;
         margin-bottom: 10px;
+        flex-shrink: 0;
     }
     
     .start-subtitle {
         font-size: 15px;
         margin-bottom: 0;
+        flex-shrink: 0;
     }
     
     .btn-start {
         padding: 12px 40px;
         font-size: 18px;
         margin-top: 0;
+        flex-shrink: 0;
     }
 }
 

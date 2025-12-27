@@ -15,6 +15,37 @@ const base64ToBlob = (base64) => {
     return new Blob([uInt8Array], { type: contentType })
 }
 
+// 이미지 압축 함수 (용량 제한 해결)
+const compressImage = (base64Data, maxWidth = 2000, maxHeight = 2000, quality = 0.85) => {
+    return new Promise((resolve, reject) => {
+        const img = new Image()
+        img.onload = () => {
+            const canvas = document.createElement('canvas')
+            let width = img.width
+            let height = img.height
+
+            // 비율 유지하면서 리사이즈
+            if (width > maxWidth || height > maxHeight) {
+                const ratio = Math.min(maxWidth / width, maxHeight / height)
+                width = width * ratio
+                height = height * ratio
+            }
+
+            canvas.width = width
+            canvas.height = height
+
+            const ctx = canvas.getContext('2d')
+            ctx.drawImage(img, 0, 0, width, height)
+
+            // JPEG로 변환하여 파일 크기 줄이기 (PNG보다 작음)
+            const compressedBase64 = canvas.toDataURL('image/jpeg', quality)
+            resolve(compressedBase64)
+        }
+        img.onerror = reject
+        img.src = base64Data
+    })
+}
+
 // 고유 해시 생성 (간단한 버전)
 const createHash = (id) => {
     // Web Crypto API 사용 (브라우저 내장)
@@ -30,18 +61,39 @@ export async function savePhotoToServer(photoData) {
         // 1. 해시(폴더명) 생성 - id 기반
         const hash = id 
 
-        // 2. 이미지 Blob 변환
-        const imageBlob = base64ToBlob(imageData)
+        // 2. 이미지 압축 (용량 제한 방지)
+        let compressedImageData = imageData
+        try {
+            compressedImageData = await compressImage(imageData, 2000, 2000, 0.85)
+            console.log('이미지 압축 완료')
+        } catch (compressError) {
+            console.warn('이미지 압축 실패, 원본 사용:', compressError)
+            // 압축 실패 시 원본 사용
+        }
 
-        // 3. 이미지 업로드 (photos 버킷)
+        // 3. 이미지 Blob 변환
+        const imageBlob = base64ToBlob(compressedImageData)
+
+        // 파일 크기 확인 (Supabase 제한: 일반적으로 50MB)
+        const fileSizeMB = imageBlob.size / (1024 * 1024)
+        console.log(`이미지 크기: ${fileSizeMB.toFixed(2)}MB`)
+        
+        if (fileSizeMB > 50) {
+            throw new Error(`이미지가 너무 큽니다 (${fileSizeMB.toFixed(2)}MB). 최대 50MB까지 지원됩니다.`)
+        }
+
+        // 4. 이미지 업로드 (photos 버킷) - JPEG로 저장
         const { error: imageError } = await supabase.storage
             .from('photos')
-            .upload(`${hash}/photo.png`, imageBlob, {
-                contentType: 'image/png',
+            .upload(`${hash}/photo.jpg`, imageBlob, {
+                contentType: 'image/jpeg',
                 upsert: true
             })
 
-        if (imageError) throw imageError
+        if (imageError) {
+            console.error('Supabase 업로드 오류:', imageError)
+            throw imageError
+        }
 
         // 4. 메타데이터 생성 및 업로드
         const metadata = {
@@ -88,18 +140,34 @@ export async function getPhotoFromServer(hash) {
         const metaText = await metaData.text()
         const metadata = JSON.parse(metaText)
 
-        // 2. 이미지 Public URL 가져오기
+        // 2. 이미지 Public URL 가져오기 (JPEG 또는 PNG 모두 시도)
         const { data: publicUrlData } = supabase.storage
             .from('photos')
-            .getPublicUrl(`${hash}/photo.png`)
+            .getPublicUrl(`${hash}/photo.jpg`)
 
         // 3. 이미지 데이터(Base64)가 필요한 경우 다운로드해서 변환 (선택적)
         // 여기서는 URL만 반환하거나, 기존 로직 호환성을 위해 Base64로 변환할 수도 있음
         // 기존 컴포넌트 호환성을 위해 Base64로 변환해서 반환
         
-        const { data: imageData, error: imageError } = await supabase.storage
+        // JPEG 먼저 시도, 없으면 PNG 시도
+        let imageData, imageError, imageType = 'jpeg'
+        const jpegResult = await supabase.storage
             .from('photos')
-            .download(`${hash}/photo.png`)
+            .download(`${hash}/photo.jpg`)
+        
+        if (jpegResult.error) {
+            // PNG로 재시도 (기존 파일 호환성)
+            const pngResult = await supabase.storage
+                .from('photos')
+                .download(`${hash}/photo.png`)
+            imageData = pngResult.data
+            imageError = pngResult.error
+            imageType = 'png'
+        } else {
+            imageData = jpegResult.data
+            imageError = null
+            imageType = 'jpeg'
+        }
             
         if (imageError) throw new Error('이미지를 찾을 수 없습니다.')
 
@@ -108,7 +176,7 @@ export async function getPhotoFromServer(hash) {
             new Uint8Array(imageBuffer)
                 .reduce((data, byte) => data + String.fromCharCode(byte), '')
         )
-        const base64Image = `data:image/png;base64,${base64}`
+        const base64Image = `data:image/${imageType};base64,${base64}`
 
         return {
             success: true,
@@ -163,10 +231,10 @@ export async function getAllPhotosFromServer() {
                         metadata = JSON.parse(metaText)
                     }
 
-                    // 2-2. 이미지 Public URL
+                    // 2-2. 이미지 Public URL (JPEG 또는 PNG)
                     const { data: publicUrlData } = supabase.storage
                         .from('photos')
-                        .getPublicUrl(`${hash}/photo.png`)
+                        .getPublicUrl(`${hash}/photo.jpg`)
 
                     return {
                         id: metadata.id || hash,
@@ -230,7 +298,7 @@ export async function deletePhotoFromServer(hash) {
 
         if (listError) throw listError
 
-        // 2. 폴더 내 모든 파일 삭제
+        // 2. 폴더 내 모든 파일 삭제 (photo.jpg 또는 photo.png 모두 포함)
         if (files && files.length > 0) {
             const filePaths = files.map(file => `${hash}/${file.name}`)
             
